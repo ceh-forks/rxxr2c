@@ -16,7 +16,7 @@ char znext(char);
 template<typename T>
 struct llist {
   T head;
-  struct llist tail;
+  struct llist<T> *tail;
 };
 
 template<typename T>
