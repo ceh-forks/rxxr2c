@@ -1,4 +1,5 @@
 /* Standard general functions, structures and constants */
+#define NULL 0
 //First/last character of alphabet in ASCII
 #define ZMIN '\x00'
 #define ZMAX '\x7f'
@@ -12,6 +13,8 @@ int max(int, int);
 char zprev(char);
 char znext(char);
 
+void strLower(char *);
+
 //Linked list
 template<typename T>
 struct llist {
@@ -20,7 +23,7 @@ struct llist {
 };
 
 template<typename T>
-struct llist<T> addListNode(T, struct llist<T> *);
+struct llist<T> *addListNode(T, struct llist<T> *);
 
 //Pair of a type
 template<typename T>
@@ -30,5 +33,11 @@ struct pair {
 };
 
 template <typename T>
-struct pair<T> makePair(T i, T j);
+struct btree {
+  T node;
+  struct btree *lt;
+  struct btree *rt;
+};
 
+template <typename T>
+struct pair<T> *makePair(T i, T j);

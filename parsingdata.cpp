@@ -1,11 +1,9 @@
-#include<stdlib.h>
-#include "baselib.h"
 #include "parsingdata.h"
 
 //Create regex with default metadata
 struct meta *make_r(int i, int j) {
   struct meta *r;
-  r = malloc(sizeof(struct meta));
+  r = new struct meta;
   r->spos = i;
   r->epos = j;
   r->scount = 0;
@@ -14,7 +12,7 @@ struct meta *make_r(int i, int j) {
 }
 
 struct ctr *make_ctr(int i, int j, struct ctr *c, struct ctr *d) {
-  struct ctr *r = malloc(sizeof(struct ctr));
+  struct ctr *r = new struct ctr;
   r->a = i;
   r->b = j;
   r->lt = c;
@@ -27,21 +25,21 @@ struct ctr *ctr_add_r(struct ctr *node, int u, int v) {
     return make_ctr(u, v, NULL, NULL);
   else if(v < node->a) {
     struct ctr *t = ctr_add_r(node->lt, u, v);
-    node->lt = n;
+    node->lt = t;
     return node;
   }
   else if(node->b < u) {
     struct ctr *t = ctr_add_r(node->rt, u, v);
-    node->rt = n;
+    node->rt = t;
     return node;
   }
   else {
     if(node->a != u) {
-      struct ctr *t = ctr_add_r(node->lt, min(node->a, u), zprev(max(node->a, u));
+      struct ctr *t = ctr_add_r(node->lt, min(node->a, u), zprev(max(node->a, u)));
       node->lt = t;
     }
     if(node->b != v) {
-      struct ctr *t = ctr_add_r(node->rt, znext(min(node->b, v)), max(node->b, v);
+      struct ctr *t = ctr_add_r(node->rt, znext(min(node->b, v)), max(node->b, v));
       node->rt = t;
     }
     struct ctr *t = make_ctr(max(node->a, u), min(node->b, v), node->lt, node->rt);
@@ -61,8 +59,10 @@ struct llist<struct pair<char> *> *ctr_positive_r(struct ctr *node, struct llist
     return lst;
   struct llist<struct pair<char> *> *t = ctr_positive_r(node->rt, lst);
   if(t == NULL) {
-    struct pair<char> *p = makePair<char>(node->a, node->b);
-    struct llist<struct pair<char> *> *r = addListNode<struct pair<char> *>(p, NULL);
+    struct pair<char> *p = new pair<char>;
+    p->a = node->a; p->b = node->b;
+    struct llist<struct pair<char> *> *r = new llist<struct pair<char> *>;
+    r->head = p; r->tail = NULL;
     return ctr_positive_r(node->lt, r);
   }
   else {
@@ -71,9 +71,11 @@ struct llist<struct pair<char> *> *ctr_positive_r(struct ctr *node, struct llist
       return ctr_positive_r(node->lt, t);
     }
     else {
-      struct pair<char> *p = makePair<char>(node->a, node->b);
-      t = addListNode<struct pair<char> *>(p, t);
-      return ctr_positive_r(node->lt, t);
+      struct pair<char> *p = new pair<char>;
+      p->a = node->a; p->b = node->b;
+      struct llist<struct pair<char> *> *r = new llist<struct pair<char> *>;
+      r->head = p; r->tail = t;
+      return ctr_positive_r(node->lt, r);
     }
   }
 }
@@ -88,29 +90,37 @@ struct neg_r {
 };
 
 struct neg_r *mkNegR(struct llist<struct pair<char> *> *i, char j) {
-  struct neg_r *r = malloc(sizeof(struct neg_r));
+  struct neg_r *r = new struct neg_r;
   r->a = i;
   r->b = j;
+  return r;
 }
 
-struct neg_r *ctr_negative_r(struct ctr *node, struct llist<struct pair<char> *> neg, char next) {
-  if(node == NULL)
-    return mkNegR(neg, next);
+struct neg_r *ctr_negative_r(struct ctr *node, struct llist<struct pair<char> *> *neg, char next) {
+  if(node == NULL) {
+    struct neg_r *r = mkNegR(neg, next);
+    return r;
+  }
   struct neg_r *t = ctr_negative_r(node->rt, neg, next);
   if(node->b == zprev(t->b))
     return ctr_negative_r(node->lt, t->a, node->a);
   else {
-    struct pair<char> *p = makePair<char>(znext(node->b), zprev(t->b));
-    neg = addListNode<struct pair<char> *>(p, neg);
-    return ctr_negative_r(node->lt, neg, node->a);
+    struct pair<char> *p = new pair<char>;
+    p->a = znext(node->b); p->b = zprev(t->b);
+    struct llist<struct pair<char> *> *r = new struct llist<struct pair<char> *>;
+    r->head = p; r->tail = neg;
+    return ctr_negative_r(node->lt, r, node->a);
   }
 }
 
 struct llist<struct pair<char> *> *ctr_negative(struct ctr *node) {
   struct neg_r *r = ctr_negative_r(node, NULL, '\x80');
   if(ZMIN < r->b) {
-    struct pair<char> *t = makePair(ZMIN, zprev(r->b));
-    return addListNode(t, r->a);
+    struct pair<char> *t = new pair<char>;
+    t->a = ZMIN; t->b = zprev(r->b);
+    struct llist<struct pair<char> *> *r2 = new struct llist<struct pair<char> *>;
+    r2->head = t; r2->tail = r->a;
+    return r2;
   }
   else
     return r->a;
