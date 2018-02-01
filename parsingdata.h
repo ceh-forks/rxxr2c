@@ -28,7 +28,7 @@ enum expe {Zero, //Null
 };
 
 //expressions matching just a single character
-struct atom {
+struct exp : atom {
   short isList; //Either single character (c1) or character class
   char c1;
   char c2;
@@ -59,7 +59,7 @@ enum gkind {CAP, //capturing group with group id
 
 struct regex;
 
-struct group {
+struct exp : group {
   enum gkind type;
   int m_on;
   int m_off;
@@ -69,12 +69,12 @@ struct group {
 
 enum qfier {Gq, Rq}; //Greedy, Reluctant
 
-struct kleene {
+struct exp : kleene {
   enum qfier q;
   struct regex *r;
 };
 
-struct conalt {
+struct exp : conalt {
   struct regex *r1;
   struct regex *r2;
 };

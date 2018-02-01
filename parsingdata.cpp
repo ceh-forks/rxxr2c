@@ -1,13 +1,17 @@
 #include "parsingdata.h"
 
 //Create regex with default metadata
-struct meta *make_r(int i, int j) {
-  struct meta *r;
-  r = new struct meta;
-  r->spos = i;
-  r->epos = j;
-  r->scount = 0;
-  r->nullable = 0;
+struct regex *make_r(struct exp *e, int i, int j) {
+  struct regex *r;
+  r = new struct regex;
+  struct meta *m;
+  m = new struct meta;
+  m->spos = i;
+  m->epos = j;
+  m->scount = 0;
+  m->nullable = 0;
+  r->expression = e;
+  r->metadata = m;
   return r;
 }
 
@@ -125,4 +129,63 @@ struct llist<struct pair<char> *> *ctr_negative(struct ctr *node) {
   else
     return r->a;
 }
+
+struct *exp makeZero() {
+  struct exp *r = new struct exp;
+  r->type = Zero;
+  return r;
+}
+
+struct *exp makeOne() {
+  struct exp *r = new struct exp;
+  r->type = One;
+  return r;
+}
+
+struct *exp makeDot() {
+  struct exp *r = new struct exp;
+  r->type = Dot;
+  return r;
+}
+
+struct *exp makePred(enum predt pr') {
+  struct exp *r = new struct exp;
+  r->type = Pred;
+  r->pr = pr';
+  return r;
+}
+
+struct *exp makeAtomChar(char c1) {
+  struct exp *r = new struct exp;
+  r->type = Atom;
+  r->at = new struct atom;
+  r->at->isList = 0;
+  r->at->c1 = c1;
+  r->at->next = NULL;
+  return r;
+}
+
+struct *exp makeAtomClass(char c1, char c2, struct atom *next) {
+  struct exp *r = new struct exp;
+  r->type = Atom;
+  r->at = new struct atom;
+  r->at->c1 = c1;
+  r->at->c2 = c2;
+  r->at->next = next;
+  return r;
+}
+
+struct *exp makeGroup() {
+  struct exp *r = new struct exp;
+  r->type = Group;
+  r->gk = new struct group;
+}
+
+struct *exp makeBackref()
+
+struct *exp makeConc
+
+struct *exp makeAlt
+
+struct *exp makeKleene
 

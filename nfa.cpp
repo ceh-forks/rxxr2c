@@ -326,7 +326,7 @@ struct pair<int> *compile(struct regex *r, struct state *sv[], struct pair<int> 
         kont_eb = next;
       }
       int next_mb, kont_mb;
-      struct pair<int> p = compile(e->kl->r, sv, pv, next_eb, kont_eb, flags);
+      struct pair<int> *p = compile(e->kl->r, sv, pv, next_eb, kont_eb, flags);
       if(e->kl->r->metadata->nullable == 1) {
         pv[p->a]->a = e->kl->r->metadata->spos;
         pv[p->a]->b = e->kl->r->metadata->spos;
