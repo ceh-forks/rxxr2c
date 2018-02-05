@@ -25,9 +25,8 @@ struct llist {
 template<typename T>
 struct llist<T> *addListNode(T, struct llist<T> *);
 
-//Creates a new list which is a copy of a given one
 template<typename T>
-struct llist<T> *listCpy(llist<T> *list);
+int listLength(struct llist<T> *);
 
 //Pair of a type
 template<typename T>
@@ -47,7 +46,7 @@ template <typename T>
 struct btree<T> *makeTree(T, struct btree<T> *, struct btree<T> *);
 
 template <typename T>
-struct llist<T> *llappend(struct llist<T> *, struct llist<T> *);
+struct llist<T> *listAppend(struct llist<T> *, struct llist<T> *);
 
 template <typename T>
 struct pair<T> *makePair(T i, T j);

@@ -39,7 +39,7 @@ struct llist<T> *addListNode(T item, struct llist<T> *node) {
 }
 
 template <typename T>
-struct llist<T> *llappend(struct llist<T> *l1, struct llist<T> *l2) {
+struct llist<T> *listAppend(struct llist<T> *l1, struct llist<T> *l2) {
   if (l1 == NULL)
     return l2;
   else {
@@ -49,6 +49,16 @@ struct llist<T> *llappend(struct llist<T> *l1, struct llist<T> *l2) {
     t->tail = l2;
     return l1;
   }
+}
+
+template <typename T>
+int listLength(struct llist<T> *l) {
+  int i = 0;
+  while(l) {
+    l = l->tail;
+    i++;
+  }
+  return i;
 }
 
 template<typename T>
