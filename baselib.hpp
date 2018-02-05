@@ -44,21 +44,18 @@ struct btree {
 };
 
 template <typename T>
-struct btree<T> *makeTree(T node, struct btree<T> *l, struct btree<T> *r) {
-  struct btree<T> *r = new struct btree<T>;
-  r->node = node;
-  r->lt = l;
-  r->rt = r;
-  return r;
-}
+struct btree<T> *makeTree(T, struct btree<T> *, struct btree<T> *);
+
+template <typename T>
+struct llist<T> *llappend(struct llist<T> *, struct llist<T> *);
 
 template <typename T>
 struct pair<T> *makePair(T i, T j);
 
 //Returns a copy of a list
 template<typename T>
-struct llist<T> *listCpy(struct llist<T> *)
+struct llist<T> *listCpy(struct llist<T> *);
 
 //Returns a copy of a btree
 template<typename T>
-struct btree<T> *treeCpy(struct btree<T> *)
+struct btree<T> *treeCpy(struct btree<T> *);

@@ -1,4 +1,4 @@
-#include "parsingdata.h"
+#include "parsingdata.hpp"
 #include <iostream>
 
 struct llist<int> *make(int i) {
@@ -12,6 +12,13 @@ struct beta {
   char c1;
   char c2;
   struct llist<int> *l;
+};
+
+struct beta *makeBeta(char c1, char c2, struct llist<int> *l) {
+  struct beta *r = new struct beta;
+  r->c1 = c1;
+  r->c2 = c2;
+  r->l = l;
 }
 
 void btins(struct btree<int> *t, int i) {
@@ -41,29 +48,40 @@ struct btree<int> *elems(struct llist<int> *l) {
   return t;
 }
 
-void otr_add(struct btree<struct beta> *tr, char _u, char _v, llist<int> *_l) {
+struct btree<struct beta *> *otr_add(struct btree<struct beta *> *tr, char _u, char _v, llist<int> *_l) {
   if (tr == NULL)
-    return makeTree<struct beta>(makeBeta(_u, _v, _l), NULL, NULL);
-  else if (_u < tr->beta->c1)
-    return makeTree<struct beta>(makeBeta(tr->beta->c1, tr->beta->c2, listCpy<int>(tr->beta->l)), otr_add(tr->lt, _u, _v, _l), treeCpy<int>(tr->rt));
-  else if (tr->beta->c2 < _u)
-    return makeTree<struct beta>(makeBeta(tr->beta->c1, tr->beta->c2, listCpy<int>(tr->beta->l)), treeCpy<int>(tr->lt), otr_add(tr->rt, _u, _v, _l));
+    return makeTree<struct beta *>(makeBeta(_u, _v, _l), NULL, NULL);
+  else if (_u < tr->node->c1) {
+    tr->lt = otr_add(tr->lt, _u, _v, _l);
+    return tr;
+  }
+  else if (tr->node->c2 < _u) {
+    tr->rt = otr_add(tr->rt, _u, _v, _l);
+    return tr;
+  }
   else {
-    btree<struct beta> _ltr, _rtr;
-    if (_u == tr->beta->c1)
-      _ltr = tr->lt
-    else if (tr->beta->c1 < _u)
-      _ltr = otr_add(tr->lt, tr->beta->c1, zprev(_u), tr->beta->l);
+    btree<struct beta *> *_ltr, *_rtr;
+    if (_u == tr->node->c1)
+      _ltr = tr->lt;
+    else if (tr->node->c1 < _u)
+      _ltr = otr_add(tr->lt, tr->node->c1, zprev(_u), tr->node->l);
     else
-      _ltr = otr_add(tr->lt, _u, zprev(tr->beta->c1), _l);
+      _ltr = otr_add(tr->lt, _u, zprev(tr->node->c1), _l);
     
-    if (_v == tr->beta->c2)
+    if (_v == tr->node->c2)
       _rtr = tr->rt;
-    else if (_v < tr->beta->c2)
-      _rtr = otr_add(tr->rt, znext(_v), tr->beta->c2, tr->beta->l);
+    else if (_v < tr->node->c2)
+      _rtr = otr_add(tr->rt, znext(_v), tr->node->c2, tr->node->l);
     else
-      _rtr = otr_add(tr->rt, znext(tr->beta->c2), _v, _l);
-    return makeTree<struct beta>(makeBeta(max(tr->beta->c1, _u), min(tr->beta->c2, _v), append<int>(_l, tr->beta->l)), _ltr, _rtr);
+      _rtr = otr_add(tr->rt, znext(tr->node->c2), _v, _l);
+    
+    //Make new beta
+    tr->node->c1 = max(tr->node->c1, _u);
+    tr->node->c2 = min(tr->node->c2, _v);
+    tr->node->l = llappend<int>(_l, tr->node->l);
+    tr->lt = _ltr;
+    tr->rt = _rtr;
+    return tr;
   }
 }
 

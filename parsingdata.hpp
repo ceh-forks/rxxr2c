@@ -1,5 +1,5 @@
 /* Lexing / parsing structures & functions */
-#include "baselib.h"
+#include "baselib.hpp"
 //Flags for regex lexer
 #define FLAG_UNIX_LINES 1
 #define FLAG_NO_CASE 2
@@ -28,7 +28,7 @@ enum expe {Zero, //Null
 };
 
 //expressions matching just a single character
-struct exp : atom {
+struct atom {
   short isList; //Either single character (c1) or character class
   char c1;
   char c2;
@@ -59,7 +59,7 @@ enum gkind {CAP, //capturing group with group id
 
 struct regex;
 
-struct exp : group {
+struct group {
   enum gkind type;
   int m_on;
   int m_off;
@@ -69,12 +69,12 @@ struct exp : group {
 
 enum qfier {Gq, Rq}; //Greedy, Reluctant
 
-struct exp : kleene {
+struct kleene {
   enum qfier q;
   struct regex *r;
 };
 
-struct exp : conalt {
+struct conalt {
   struct regex *r1;
   struct regex *r2;
 };
