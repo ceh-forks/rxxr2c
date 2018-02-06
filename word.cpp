@@ -52,5 +52,24 @@ char chr_select(crange *c, word *w) {
     }
   }
 }
-char *word_print(void);
-char *word_print_select(word);
+
+llist<char> *word_select_fold(word *w, word *l, llist<char> *acc) {
+  if(w == NULL)
+    return acc;
+  else {
+    addListNode<char>(chr_select(w->head, l), acc);
+    return word_select_fold(w->tail, l, acc);
+  }
+}
+
+llist<char> *word_select(word *w, word *l) {
+  llist<char> *t = new llist<char>;
+  t = NULL;
+  return word_select_fold(w, l, t);
+}
+
+/*char *word_print(llist<char *> *l, word *w) {
+  if (u == v)
+
+}
+char *word_print_select(word);*/

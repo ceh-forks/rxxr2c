@@ -78,18 +78,28 @@ struct btree<struct beta *> *otr_add(struct btree<struct beta *> *tr, char _u, c
     //Make new beta
     tr->node->c1 = max(tr->node->c1, _u);
     tr->node->c2 = min(tr->node->c2, _v);
-    tr->node->l = llappend<int>(_l, tr->node->l);
+    tr->node->l = listAppend<int>(_l, tr->node->l);
     tr->lt = _ltr;
     tr->rt = _rtr;
     return tr;
   }
 }
 
-otr_collect(struct btree<struct beta> *tr, w, lst) {
+struct llist<struct beta *> otr_collect(struct btree<struct beta> *tr, w, lst) {
   if (tr == NULL)
     return lst;
   else {
     
+struct llist<struct beta *> advance_fold_left(struct btree<struct beta *> *tr, struct llist<struct beta *> *l) {
+  otr_add(tr, l->, v, jl);
+  return advance_fold_left(tr)
+}
+
+advance_fold_right() {
+
+}
+
+
 
 int main(void) {
   std::cout << "hello\n";
