@@ -1,15 +1,16 @@
 #include "nfa.hpp"
 #include "baselib.hpp"
+#include "set.cpp"
 
 struct inode {
   char c1;
   char c2;
-  struct inttree *t;
+  struct llist<int> *t;
   struct inode *n1;
   struct inode *n2;
 };
 
-struct inode *makeInode(char c1, char c2, struct inttree *t, struct inode *n1, struct inode *n2) {
+struct inode *makeInode(char c1, char c2, struct llist<int> *t, struct inode *n1, struct inode *n2) {
   struct inode *r = new struct inode;
   r->c1 = c1;
   r->c2 = c2;
@@ -19,7 +20,7 @@ struct inode *makeInode(char c1, char c2, struct inttree *t, struct inode *n1, s
   return r;
 }
 
-struct inode *itr_add(inode *tr, char _u, char _v, struct inttree *_s) {
+struct inode *itr_add(inode *tr, char _u, char _v, struct llist<int> *_s) {
   if(tr == NULL) {
     return makeInode(_u, _v, _s, NULL, NULL);
   }
@@ -41,7 +42,7 @@ struct inode *itr_add(inode *tr, char _u, char _v, struct inttree *_s) {
       if(tr->c2 == _v)
         _rtr = tr->n2;
       else if(_v < tr->c2)
-        _rtr = itr_add(tr->n2, znex(_v), tr->c2, tr->t);
+        _rtr = itr_add(tr->n2, znext(_v), tr->c2, tr->t);
       else
         _rtr = itr_add(tr->n2, znext(tr->c2), _v, _s);
       return makeInode(max(tr->c1, _u), min(tr->c2, _v), intset_union(_s, tr->t), _ltr, _rtr);
