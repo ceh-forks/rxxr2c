@@ -1,6 +1,6 @@
 #include<ctype.h>
-#include "parsingdata.h"
-#include "nfa.h"
+#include "parsingdata.hpp"
+#include "nfa.hpp"
 
 struct pred *get_pcond(enum predt p, int flags) {
   struct pred *r = new struct pred;
