@@ -24,10 +24,10 @@ struct inode *makeInode(char c1, char c2, struct llist<int> *t, struct inode *n1
   r->n1 = n1;
   r->n2 = n2;
   return r;
-};
+}
 
 struct inode *itr_add(struct inode *tr, char _u, char _v, struct llist<int> *_s) {
-  if(tr == NULL) {
+  if(tr == NULL)
     return makeInode(_u, _v, _s, NULL, NULL);
 
   if(_v < tr->c1) {
@@ -46,6 +46,7 @@ struct inode *itr_add(struct inode *tr, char _u, char _v, struct llist<int> *_s)
       _ltr = itr_add(tr->n1, tr->c1, zprev(_u), tr->t);
     else
       _ltr = itr_add(tr->n1, _u, zprev(tr->c1), _s);
+
     if(tr->c2 == _v)
       _rtr = tr->n2;
     else if(_v < tr->c2)
@@ -67,9 +68,52 @@ struct inode *itr_add(struct inode *tr, char _u, char _v, struct llist<int> *_s)
 struct llist<struct phi_w_prefix *> *itr_collect(struct inode *tr, word *w, struct llist<struct phi_w_prefix *> *lst) {
   if (tr == NULL)
     return lst;
+  crange *c = new crange;
+  c->a = tr->c1;
+  c->b = tr->c2;
   struct phi_w_prefix *phi = new phi_w_prefix;
-  phi->w = word_extend(w, tr->c1, tr->c2);
-  phi->p = tr->s;
-  struct llist<struct phi_w_prefix *> *philist = addListNode<struct phi_w_prefix *>(phi, lst)
+  phi->w = word_extend(w, c);
+  phi->p = tr->t;
+  struct llist<struct phi_w_prefix *> *philist = addListNode<struct phi_w_prefix *>(phi, lst);
   return itr_collect(tr->n2, w, itr_collect(tr->n2, w, philist));
+}
+
+struct nme {
+  char next;
+  word *lst;
+};
+
+struct nme *nomatch_explore(struct inode *tr, struct nme *nm) {
+  if (tr == NULL)
+    return nm;
+  struct nme *right = nomatch_explore(tr->n2, nm);
+  delete nm;
+  struct nme *left = new struct nme;
+  left->next = tr->c1;
+  if (tr->c2 != zprev(right->next)) {
+    crange *ct = new crange;
+    ct->a = znext(tr->c2);
+    ct->b = zprev(right->next);
+    left->lst = addListNode<crange *>(ct, right->lst);
+  }
+  else
+    left->lst = right->lst;
+  delete right;
+  return nomatch_explore(tr->n1, left);
+}
+
+word *itr_find_nomatch(struct inode *tr) {
+  struct nme *nm = new struct nme;
+  nm->next = '\x80';
+  nm->lst = NULL;
+  nm = nomatch_explore(tr, nm);
+  if ('\x00' < nm->next) {
+    crange *t = new crange;
+    t->a = '\x00';
+    t->b = zprev(nm->next);
+    nm->lst = addListNode<crange *>(t, nm->lst);
+  }
+  word *lst = nm->lst;
+  delete nm;
+  return lst;
 }
