@@ -36,7 +36,7 @@ struct atom {
 };
 
 //predicate expressions - anchors
-enum predt {Bol, //beginning of line
+enum predtype {Bol, //beginning of line
   Eol, //end of line
   Wordb, //word boundary
   NWordb, //not word boundary
@@ -84,11 +84,11 @@ struct exp {
   enum expe type;
   union {
     int i;
-    struct atom *at;
-    enum predt pr;
-    struct group *gk;
-    struct kleene *kl;
-    struct conalt *ca;
+    struct atom *atom;
+    enum predtype pred;
+    struct group *group;
+    struct kleene *kleene;
+    struct conalt *conalt;
   };
 };
 
@@ -118,3 +118,14 @@ struct ctr {
   struct ctr *rt;
 };
 
+struct exp *makeZero();
+struct exp *makeOne();
+struct exp *makeDot();
+struct exp *makePred(enum predtype);
+struct exp *makeAtomChar(char);
+struct exp *makeAtomClass(char, char, struct atom *);
+struct exp *makeGroup();
+struct exp *makeBackref();
+struct exp *makeConc();
+struct exp *makeAlt();
+struct exp *makeKleene();

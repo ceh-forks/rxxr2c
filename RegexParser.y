@@ -6,9 +6,9 @@ struct range {
   enum qfier qf;
 };
 
-#include "parsingdata.h"
+#include "parsingdata.hpp"
 
-make_seq(int r, int n, int cpos) {
+make_seq(int r, int n, struct pair<int> *cpos) {
   if (n == 1)
     return r;
   else if (n > 1)
@@ -39,7 +39,7 @@ make_reluctant_zton(int r, int n, int cpos) {
     //TODO: Error handling
 }
 
-make_range(int r, struct range *rng, int cpos) {
+make_range(int r, struct range *rng, struct pair<int> *cpos) {
   if (rng->m == 0) {
     if (rng->n == 0)
       return make_r(makeOne(), cpos);
@@ -93,56 +93,55 @@ make_range(int r, struct range *rng, int cpos) {
 %token VBar NegMods EndMods Eos
 
 %start parse
-%type struct regex parse
 %%
 
-parse: Eos { make_r(newOne(), (0, 0)); } 
+parse: Eos { make_r(makeOne(), 0, 0); } 
   |expr Eos { $1 };
 
 expr: conc { $1 } 
-  |conc VBar expr { make_r (Alt ($1, $3)) (r_spos $1, r_epos $3) }
+  |conc VBar expr { make_r(makeAlt ($1, $3), r_spos($1), r_epos($3)); }
 
 conc: factor { $1 }
-  |factor conc { make_r (Conc ($1, $2)) (r_spos $1, r_epos $2) }
+  |factor conc { make_r(makeConc($1, $2) r_spos($1), r_epos($2)); }
 
 factor: atom { $1 }
-  |factor Repetition { make_range $1 (snd $2) (r_spos $1, fst $2) }
+  |factor Repetition { make_range($1, $2->b, makePair<int>(r_spos($1), $2->a)); }
 
 atom: literal { $1 }
-  |Anchor { make_r (Pred (snd $1)) (fst $1) }
-  |TkDot { make_r Dot ($1, $1) }
-  |BeginQuote EndQuote { make_r One (fst $1, snd $2) }
+  |Anchor { make_r(makePred($1->b), $1->a->a, $1->a->b); }
+  |TkDot { make_r(makeDot(), $1, $1); }
+  |BeginQuote EndQuote { make_r(makeOne(), $1->a, $2->b); }
   |BeginQuote quote_body EndQuote { $2 }
-  |GrpOpen GrpClose { make_r (Group (snd $1, 0, 0, make_r One (fst $1, $2))) (fst $1, $2) }
-  |GrpOpen expr GrpClose { make_r (Group (snd $1, 0, 0, $2)) (fst $1, $3) }
-  |TkBackref { make_r (Backref (snd $1)) (fst $1) }
-  |ModsGrpOpen mods GrpClose { make_r (Group (MODS, fst $2, snd $2, make_r One ($1, $3))) ($1, $3) }
+  |GrpOpen GrpClose { make_r (Group ($1->b, 0, 0, make_r One ($1->a, $2))) ($1->a, $2) }
+  |GrpOpen expr GrpClose { make_r (Group ($1->b, 0, 0, $2)) ($1->a, $3) }
+  |TkBackref { make_r (Backref ($1->b)) ($1->a) }
+  |ModsGrpOpen mods GrpClose { make_r (Group (MODS, $2->a, $2->b, make_r One ($1, $3))) ($1, $3) }
   |ModsGrpOpen mods EndMods GrpClose { make_r One ($1, $4) }
-  |ModsGrpOpen mods EndMods expr GrpClose { make_r (Group (NOCAP, fst $2, snd $2, $4)) ($1, $5) }
+  |ModsGrpOpen mods EndMods expr GrpClose { make_r (Group (NOCAP, $2->a, $2->b, $4)) ($1, $5) }
   |ClsOpen ch_range_list ClsClose {
-    let p = (fst $1, $3) in 
-      if snd $1 then
+    let p = ($1->a, $3) in 
+      if $1->b then
         make_r (Atom (Cls (ctr_negative $2))) p 
       else 
         make_r (Atom (Cls (ctr_positive $2))) p
   }
-  |ClsNamed { make_r (Atom (Cls (snd $1))) (fst $1) }
+  |ClsNamed { make_r (Atom (Cls ($1->b))) ($1->a) }
 
 quote_body: literal { $1 }
   | literal quote_body { make_r (Conc ($1, $2)) (r_spos $1, r_epos $2)  }
 
-literal: Literal { make_r (Atom (Char (snd $1))) (fst $1) }
+literal: Literal { make_r (Atom (Char ($1->b))) ($1->a) }
 
 mods: mod_list { ($1, 0) }
   |mod_list NegMods mod_list {($1, $3) }
 
 mod_list: { 0 }
-  |Mod mod_list { $1 lor $2 }
+  |Mod mod_list { $1 || $2 }
 
 ch_range_list: ch_range { ctr_add_cls CTNull $1 }
   |ch_range ch_range_list { ctr_add_cls $2 $1 }
 
-ch_range: Literal { [(snd $1, snd $1)] }
+ch_range: Literal { [($1->b, $1->b)] }
   |ClsRange { [$1] }
-  |ClsNamed { snd $1 }
+  |ClsNamed { $1->b }
 

@@ -35,12 +35,21 @@ struct pair {
   T b;
 };
 
+template<typename T1, T2>
+struct twople {
+  T1 a;
+  T2 b;
+};
+
 template <typename T>
 struct btree {
   T node;
   struct btree *lt;
   struct btree *rt;
 };
+
+template<typename T1, T2>
+struct twople<T1, T2> *makeTwople(T1, T2);
 
 template <typename T>
 struct btree<T> *makeTree(T, struct btree<T> *, struct btree<T> *);

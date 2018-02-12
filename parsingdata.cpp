@@ -63,10 +63,8 @@ struct llist<struct pair<char> *> *ctr_positive_r(struct ctr *node, struct llist
     return lst;
   struct llist<struct pair<char> *> *t = ctr_positive_r(node->rt, lst);
   if(t == NULL) {
-    struct pair<char> *p = new pair<char>;
-    p->a = node->a; p->b = node->b;
-    struct llist<struct pair<char> *> *r = new llist<struct pair<char> *>;
-    r->head = p; r->tail = NULL;
+    struct pair<char> *p = makePair<char>(node->a, node->b);
+    struct llist<struct pair<char> *> *r = addListNode<struct pair<char> *>(p, NULL);
     return ctr_positive_r(node->lt, r);
   }
   else {
@@ -75,10 +73,8 @@ struct llist<struct pair<char> *> *ctr_positive_r(struct ctr *node, struct llist
       return ctr_positive_r(node->lt, t);
     }
     else {
-      struct pair<char> *p = new pair<char>;
-      p->a = node->a; p->b = node->b;
-      struct llist<struct pair<char> *> *r = new llist<struct pair<char> *>;
-      r->head = p; r->tail = t;
+      struct pair<char> *p = makePair<char>(node->a, node->b);
+      struct llist<struct pair<char> *> *r = addListNode<struct pair<char> *>(p, t);
       return ctr_positive_r(node->lt, r);
     }
   }
@@ -109,10 +105,8 @@ struct neg_r *ctr_negative_r(struct ctr *node, struct llist<struct pair<char> *>
   if(node->b == zprev(t->b))
     return ctr_negative_r(node->lt, t->a, node->a);
   else {
-    struct pair<char> *p = new pair<char>;
-    p->a = znext(node->b); p->b = zprev(t->b);
-    struct llist<struct pair<char> *> *r = new struct llist<struct pair<char> *>;
-    r->head = p; r->tail = neg;
+    struct pair<char> *p = makePair<char>(znext(node->b), zprev(t->b));
+    struct llist<struct pair<char> *> *r = addListNode<struct pair<char> *>(p, neg);
     return ctr_negative_r(node->lt, r, node->a);
   }
 }
@@ -120,72 +114,72 @@ struct neg_r *ctr_negative_r(struct ctr *node, struct llist<struct pair<char> *>
 struct llist<struct pair<char> *> *ctr_negative(struct ctr *node) {
   struct neg_r *r = ctr_negative_r(node, NULL, '\x80');
   if(ZMIN < r->b) {
-    struct pair<char> *t = new pair<char>;
-    t->a = ZMIN; t->b = zprev(r->b);
-    struct llist<struct pair<char> *> *r2 = new struct llist<struct pair<char> *>;
-    r2->head = t; r2->tail = r->a;
+    struct pair<char> *t = makePair<char>(ZMIN, zprev(r->b));
+    struct llist<struct pair<char> *> *r2 = addListNode<struct pair<char> *>(t, r->a);
     return r2;
   }
   else
     return r->a;
 }
 
-struct *exp makeZero() {
+struct exp *makeZero() {
   struct exp *r = new struct exp;
   r->type = Zero;
   return r;
 }
 
-struct *exp makeOne() {
+struct exp *makeOne() {
   struct exp *r = new struct exp;
   r->type = One;
   return r;
 }
 
-struct *exp makeDot() {
+struct exp *makeDot() {
   struct exp *r = new struct exp;
   r->type = Dot;
   return r;
 }
 
-struct *exp makePred(enum predt pr') {
+struct exp *makePred(enum predtype pr) {
   struct exp *r = new struct exp;
   r->type = Pred;
-  r->pr = pr';
+  r->pred = pr;
   return r;
 }
 
-struct *exp makeAtomChar(char c1) {
+struct exp *makeAtomChar(char c1) {
   struct exp *r = new struct exp;
   r->type = Atom;
-  r->at = new struct atom;
-  r->at->isList = 0;
-  r->at->c1 = c1;
-  r->at->next = NULL;
+  r->atom = new struct atom;
+  r->atom->isList = 0;
+  r->atom->c1 = c1;
+  r->atom->c2 = NULL;
+  r->atom->next = NULL;
   return r;
 }
 
-struct *exp makeAtomClass(char c1, char c2, struct atom *next) {
+struct exp *makeAtomClass(char c1, char c2, struct atom *next) {
   struct exp *r = new struct exp;
   r->type = Atom;
-  r->at = new struct atom;
-  r->at->c1 = c1;
-  r->at->c2 = c2;
-  r->at->next = next;
+  r->atom = new struct atom;
+  r->atom->isList = 1;
+  r->atom->c1 = c1;
+  r->atom->c2 = c2;
+  r->atom->next = next;
   return r;
 }
 
-struct *exp makeGroup() {
+struct exp *makeGroup() {
   struct exp *r = new struct exp;
   r->type = Group;
-  r->gk = new struct group;
+  r->group = new struct group;
 }
 
-struct *exp makeBackref()
+struct exp *makeBackref();
 
-struct *exp makeConc
+struct exp *makeConc();
 
-struct *exp makeAlt
+struct exp *makeAlt();
 
-struct *exp makeKleene
+struct exp *makeKleene();
 

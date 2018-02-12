@@ -94,6 +94,14 @@ struct pair<T> *makePair(T i, T j) {
   return t;
 }
 
+template<typename T1, T2>
+struct twople<T1, T2> *makeTwople(T1 a, T2 b) {
+  struct twople<T1, T2> *r = new struct twople<T1, T2>;
+  r->a = a;
+  r->b = b;
+  return r;
+}
+
 template <typename T>
 struct btree<T> *makeTree(T node, struct btree<T> *l, struct btree<T> *r) {
   struct btree<T> *r = new struct btree<T>;
