@@ -147,39 +147,61 @@ struct exp *makePred(enum predtype pr) {
   return r;
 }
 
-struct exp *makeAtomChar(char c1) {
+struct exp *makeAtomChar(char c) {
   struct exp *r = new struct exp;
   r->type = Atom;
   r->atom = new struct atom;
   r->atom->isList = 0;
-  r->atom->c1 = c1;
-  r->atom->c2 = NULL;
-  r->atom->next = NULL;
+  r->atom->c = c;
   return r;
 }
 
-struct exp *makeAtomClass(char c1, char c2, struct atom *next) {
+struct exp *makeAtomClass(struct llist<pair<char> *> *cls) {
   struct exp *r = new struct exp;
   r->type = Atom;
   r->atom = new struct atom;
   r->atom->isList = 1;
-  r->atom->c1 = c1;
-  r->atom->c2 = c2;
-  r->atom->next = next;
+  r->atom->cls = cls;
   return r;
 }
 
-struct exp *makeGroup() {
+struct exp *makeGroup(enum gkind type, int m_on, int m_off, int cap_gid, struct regex *r1) {
   struct exp *r = new struct exp;
   r->type = Group;
   r->group = new struct group;
+  r->group->type = type;
+  r->group->m_on = m_on;
+  r->group->m_off = m_off;
+  r->group->r1 = r1;
+  return r;
 }
 
-struct exp *makeBackref();
+struct exp *makeBackref(int i) {
+  struct exp *r = new struct exp;
+  r->type = Backref;
+  r->i = i;
+  return r;
+}
 
-struct exp *makeConc();
+struct exp *makeConc(struct regex *r1, struct regex *r2) {
+  struct exp *r = new struct exp;
+  r->type = Conc;
+  r->conalt->r1 = r1;
+  r->conalt->r2 = r2;
+  return r;
+}
 
-struct exp *makeAlt();
+struct exp *makeAlt(struct regex *r1, struct regex *r2) {
+  struct exp *r = new struct exp;
+  r->type = Alt;
+  r->conalt->r1 = r1;
+  r->conalt->r2 = r2;
+  return r;
+}
 
-struct exp *makeKleene();
-
+struct exp *makeKleene(enum qfier q, struct regex *r1) {
+  struct exp *r = new struct exp;
+  r->type = Kleene;
+  r->kleene->q = q;
+  r->kleene->r = r1;
+}

@@ -112,25 +112,24 @@ atom: literal { $1 }
   |TkDot { make_r(makeDot(), $1, $1); }
   |BeginQuote EndQuote { make_r(makeOne(), $1->a, $2->b); }
   |BeginQuote quote_body EndQuote { $2 }
-  |GrpOpen GrpClose { make_r (Group ($1->b, 0, 0, make_r One ($1->a, $2))) ($1->a, $2) }
-  |GrpOpen expr GrpClose { make_r (Group ($1->b, 0, 0, $2)) ($1->a, $3) }
-  |TkBackref { make_r (Backref ($1->b)) ($1->a) }
-  |ModsGrpOpen mods GrpClose { make_r (Group (MODS, $2->a, $2->b, make_r One ($1, $3))) ($1, $3) }
-  |ModsGrpOpen mods EndMods GrpClose { make_r One ($1, $4) }
-  |ModsGrpOpen mods EndMods expr GrpClose { make_r (Group (NOCAP, $2->a, $2->b, $4)) ($1, $5) }
+  |GrpOpen GrpClose { make_r(makeGroup($1->b, 0, 0, make_r(makeOne ($1->a, $2))), $1->a, $2); }
+  |GrpOpen expr GrpClose { make_r(makeGroup($1->b, 0, 0, $2), $1->a, $3); }
+  |TkBackref { make_r(makeBackref($1->b), $1->a); }
+  |ModsGrpOpen mods GrpClose { make_r(makeGroup(MODS, $2->a, $2->b, make_r(makeOne(), $1, $3)), $1, $3); }
+  |ModsGrpOpen mods EndMods GrpClose { make_r(makeOne(), $1, $4); }
+  |ModsGrpOpen mods EndMods expr GrpClose { make_r(makeGroup(NOCAP, $2->a, $2->b, $4), $1, $5); }
   |ClsOpen ch_range_list ClsClose {
-    let p = ($1->a, $3) in 
-      if $1->b then
-        make_r (Atom (Cls (ctr_negative $2))) p 
+      if ($1->b)
+        make_r(makeAtomClass(ctr_negative($2)), $1->a, $3);
       else 
-        make_r (Atom (Cls (ctr_positive $2))) p
+        make_r(makeAtomClass(ctr_positive($2)), $1->a, $3);
   }
-  |ClsNamed { make_r (Atom (Cls ($1->b))) ($1->a) }
+  |ClsNamed { make_r(makeAtomClass($1->b), $1->a->a, $1->a->b); }
 
 quote_body: literal { $1 }
-  | literal quote_body { make_r (Conc ($1, $2)) (r_spos $1, r_epos $2)  }
+  | literal quote_body { make_r(makeConc($1, $2), r_spos $1, r_epos $2);  }
 
-literal: Literal { make_r (Atom (Char ($1->b))) ($1->a) }
+literal: Literal { make_r(makeAtomChar($1->b), $1->a->a, $1->a->b); }
 
 mods: mod_list { ($1, 0) }
   |mod_list NegMods mod_list {($1, $3) }

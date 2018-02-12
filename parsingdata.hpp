@@ -29,10 +29,11 @@ enum expe {Zero, //Null
 
 //expressions matching just a single character
 struct atom {
-  short isList; //Either single character (c1) or character class
-  char c1;
-  char c2;
-  struct atom *next;
+  short isList; //Either single character (c) or character class
+  union {
+    char c;
+    struct llist<struct pair<char> *> *cls;
+  };
 };
 
 //predicate expressions - anchors
@@ -107,8 +108,8 @@ struct pattern {
 struct regex *make_r(struct exp *, int, int); //create regex with default metadata
 struct ctr *make_ctr(int, int); //initialise default ctr
 struct ctr *ctr_add(struct ctr, char, char); //insert new range into character class
-struct llist<pair<char> > *ctr_positive(struct ctr); //read out character class
-struct llist<pair<char> > *ctr_negative(struct ctr); //read out inverse of character class
+struct llist<struct pair<char> *> *ctr_positive(struct ctr); //read out character class
+struct llist<struct pair<char> *> *ctr_negative(struct ctr); //read out inverse of character class
 
 //tree to store sorted character classes
 struct ctr {
@@ -123,9 +124,9 @@ struct exp *makeOne();
 struct exp *makeDot();
 struct exp *makePred(enum predtype);
 struct exp *makeAtomChar(char);
-struct exp *makeAtomClass(char, char, struct atom *);
-struct exp *makeGroup();
-struct exp *makeBackref();
-struct exp *makeConc();
-struct exp *makeAlt();
-struct exp *makeKleene();
+struct exp *makeAtomClass(llist<pair<char> *> *);
+struct exp *makeGroup(enum gkind, int, int, int, struct regex *);
+struct exp *makeBackref(int);
+struct exp *makeConc(struct regex *, struct regex *);
+struct exp *makeAlt(struct regex *, struct regex *);
+struct exp *makeKleene(enum qfier, struct regex *);
