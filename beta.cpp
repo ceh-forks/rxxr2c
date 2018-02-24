@@ -1,4 +1,7 @@
-#include "parsingdata.hpp"
+#include "nfa.hpp"
+#include "set.hpp"
+#include "error.hpp"
+#include "word.hpp"
 #include <iostream>
 
 struct llist<int> *make(int i) {
@@ -85,21 +88,58 @@ struct btree<struct beta *> *otr_add(struct btree<struct beta *> *tr, char _u, c
   }
 }
 
-struct llist<struct beta *> otr_collect(struct btree<struct beta> *tr, w, lst) {
+struct pair<struct llist<int> *> *otr_collect_fold_func(int i, struct pair<struct llist<int> *> *p) {
+  if (listMem(i, p->a) == 1)
+    return p;
+  else {
+    p->a = intset_add(i, p->a);
+    p->b = addListNode<int>(i, p->b);
+    return p;
+  }
+}
+
+struct pair<struct llist<int> *> *otr_collect_fold(struct llist<int> *l) {
+  if(l == NULL)
+    raise(NULL_ERROR);
+  if(l->tail == NULL)
+    return otr_collect_fold_func(l->head, makePair<struct llist<int> *>(NULL, NULL));
+  else
+    return otr_collect_fold_func(l->head, otr_collect_fold(l->tail));
+}
+
+struct llist<struct twople<word *, struct llist<int> *> *> *otr_collect(struct btree<struct beta *> *tr, word *w, struct llist<struct twople<word *, struct llist<int> *> *> *lst) {
   if (tr == NULL)
     return lst;
-  else {
-    
-struct llist<struct beta *> advance_fold_left(struct btree<struct beta *> *tr, struct llist<struct beta *> *l) {
-  otr_add(tr, l->, v, jl);
-  return advance_fold_left(tr)
+  struct pair<struct llist<int> *> *p = otr_collect_fold(tr->node->l);
+  word *tw = word_extend(w, makePair<char>(tr->node->c1, tr->node->c2));
+  struct llist<struct twople<word *, struct llist<int> *> *> *tlst = addListNode<struct twople<word *, struct llist<int> *> *>(makeTwople<word *, struct llist<int> *>(tw, p->b), lst);
+  delete p->a;
+  delete p;
+  return otr_collect(tr->rt, w, otr_collect(tr->lt, w, tlst));
 }
 
-advance_fold_right() {
-
+struct btree<struct beta *> *advance_fold_left(struct btree<struct beta *> *tr, struct llist<struct transition *> *l) {
+  if (l == NULL)
+    raise(NULL_ERROR);
+  struct btree<struct beta *> *t = otr_add(tr, l->head->a, l->head->b, addListNode<int>(l->head->c, NULL));
+  if (l->tail == NULL)
+    return t;
+  else
+    return advance_fold_left(t, l->tail);
 }
 
+struct btree<struct beta *> *advance_fold_right(struct nfa *nfa, struct llist<int> *l, struct btree<struct beta *> *tr) {
+  if(l == NULL)
+    raise(NULL_ERROR);
+  if(l->tail == NULL)
+    return advance_fold_left(tr, get_transitions(nfa, l->head));
+  else
+    return advance_fold_right(nfa, l->tail, advance_fold_left(tr, get_transitions(nfa, l->head)));
+}
 
+struct llist<struct twople<word *, struct llist<int> *> *> *advance(struct nfa *nfa, word *w, llist<int> *b) {
+  return otr_collect(advance_fold_right(nfa, b, NULL), w, NULL);
+}
 
 int main(void) {
   std::cout << "hello\n";

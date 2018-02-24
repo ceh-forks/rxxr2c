@@ -38,6 +38,37 @@ struct llist<T> *addListNode(T item, struct llist<T> *node) {
   return t;
 }
 
+template<typename T>
+int listMem(T item, struct llist<T> *node) {
+  struct llist<T> *t = node;
+  while(t) {
+    if (t->head == item)
+      return 1;
+    else
+      t = t->tail;
+  }
+  return 0;
+}
+
+template<typename T>
+struct llist<T> *listInitialise(T item, int i) {
+  if (i == 1)
+    return addListNode<T>(item, NULL);
+  else
+    return addListNode<T>(item, listInitialise(item, i-1));
+}
+
+template<typename T>
+struct llist<T> *listAdvance(struct llist<T> *l, int i) {
+  if (i == 0)
+    return l;
+  if (l == NULL)
+    l = addListNode<T>(NULL, NULL);
+  if (l->tail == NULL)
+    l->tail = addListNode<T>(NULL, NULL);
+  return listAdvance<T>(l->tail, i-1);
+}
+
 template <typename T>
 struct llist<T> *listAppend(struct llist<T> *l1, struct llist<T> *l2) {
   if (l1 == NULL)

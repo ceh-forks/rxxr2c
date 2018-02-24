@@ -25,6 +25,10 @@ struct llist {
 template<typename T>
 struct llist<T> *addListNode(T, struct llist<T> *);
 
+//Checks whether item is a member of a list
+template<typename T>
+int listMem(T, struct llist<T> *);
+
 template<typename T>
 int listLength(struct llist<T> *);
 
@@ -35,7 +39,7 @@ struct pair {
   T b;
 };
 
-template<typename T1, T2>
+template<typename T1, typename T2>
 struct twople {
   T1 a;
   T2 b;
@@ -48,7 +52,13 @@ struct btree {
   struct btree *rt;
 };
 
-template<typename T1, T2>
+template<typename T>
+struct llist<T> *listInitialise(T, int);
+
+template<typename T>
+struct llist<T> *listAdvance(struct llist<T> *, int);
+
+template<typename T1, typename T2>
 struct twople<T1, T2> *makeTwople(T1, T2);
 
 template <typename T>

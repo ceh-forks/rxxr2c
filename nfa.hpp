@@ -1,3 +1,5 @@
+#include "baselib.hpp"
+
 enum prede {P_BOI, P_EOI, P_EOIX, P_BOL, P_EOL, P_EOM, P_WB, P_NWB};
 
 struct pred {
@@ -5,16 +7,16 @@ struct pred {
   short value;
 };
 
-enum statet {End, Kill, Pass, MakeB, EvalB, Match, CheckPred, CheckBackref, BeginCap, EndCap, BranchAlt, BranchKln};
+enum statetype {End, Kill, Pass, MakeB, EvalB, Match, CheckPred, CheckBackref, BeginCap, EndCap, BranchAlt, BranchKln};
 
 struct state {
-  enum statet type;
+  enum statetype type;
   int i;
   short klnBool;
   union {
     struct pair<int> *pi;
     struct llist<struct pair<char> *> *cl;
-    struct pred p;
+    struct pred *p;
     char *c;
   };
 };
@@ -25,23 +27,18 @@ struct transition {
   int c;
 };
 
-struct position {
-  int a;
-  int b;
-};
-
-template <int i>
-struct t {
-  struct state *states[i];
-  struct transition *transitions[i];
-  struct position *positions[i];
+struct nfa {
+  struct llist<struct state *> *states;
+  struct llist<struct transition *> *transitions;
+  struct llist<struct pair<int> *> *positions;
   int root;
 };
 
-template <int i>
-struct t<i> make(struct pattern);
+struct nfa *make(struct pattern *);
 //int root(struct t);
 //int size(struct t);
 //struct llist<transition> get_state(struct t, int);
 //struct position get_subexp_location(struct t, int);
+
+struct llist<struct transition *> *get_transitions(struct nfa *nfa, int i);
 

@@ -132,7 +132,7 @@ quote_body: literal { $1 }
 literal: Literal { make_r(makeAtomChar($1->b), $1->a->a, $1->a->b); }
 
 mods: mod_list { ($1, 0) }
-  |mod_list NegMods mod_list {($1, $3) }
+  |mod_list NegMods mod_list { ($1, $3) }
 
 mod_list: { 0 }
   |Mod mod_list { $1 || $2 }
