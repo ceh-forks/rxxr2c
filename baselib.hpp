@@ -20,6 +20,10 @@ template<typename T>
 struct llist {
   T head;
   struct llist<T> *tail;
+
+  ~llist() {
+    delete tail;
+  }
 };
 
 template<typename T>

@@ -29,7 +29,7 @@ struct transition {
 
 struct nfa {
   struct llist<struct state *> *states;
-  struct llist<struct transition *> *transitions;
+  struct llist<struct llist<struct transition *> *> *transitions;
   struct llist<struct pair<int> *> *positions;
   int root;
 };

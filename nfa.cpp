@@ -381,7 +381,7 @@ struct nfa *make(regex *r, int flags) {
   for(int i=0; i < state_count; i++) {
     ts->head = new struct state;
     ts->head->type = End;
-    ts = t->tail;
+    ts = ts->tail;
   }
   //Initialise transitions
   nfa->transitions = listInitialise<struct transition *>(NULL, state_count);
@@ -402,20 +402,61 @@ struct state *get_state(struct nfa *nfa, int i) {
   return listAdvance<struct state *>(nfa->states, i)->head;
 }
 
-struct pair<struct llist<int> *> *e_get_transitions_explore(int i, struct pair<struct llist<int> *> *lst) {
+struct twople<struct llist<int> *, struct llist<struct transition *> *> *e_get_transitions_explore(int i, struct twople<struct llist<int> *, struct llist<struct transition *> *> *lst, struct nfa *nfa) {
   if(listMem<int>(i, lst->a))
     return lst;
   struct llist<int> *st = intset_add(i, lst->a);
-  switch (get_state(nfa, i)) {
+  struct state *swt = get_state(nfa, i);
+  switch (swt->type) {
     case Kill:
       return lst;
     case End:
-      lst->b = 
+      struct transition *trans = new struct transition;
+      trans->a = ZMIN;
+      trans->b = ZMAX;
+      trans->c = i;
+      lst->b = addListNode<struct transition *>(trans, lst->b);
+      return lst;
+    case Pass:
+    case MakeB:
+    case EvalB:
+      return e_get_transitions_explore(swt->i, lst, nfa);
+    case Match:
+      struct llist<struct transition *> *itr = lst->b;
+      struct llist<struct pair<char> *> *foldlist = swt->cl;
+      while(foldlist) {
+        struct transition *trans = new struct transition;
+        trans->a = foldlist->head->a;
+        trans->b = foldlist->head->b;
+        trans->c = swt->i;
+        itr = addListNode<struct transition *>(trans, itr);
+        foldlist = foldlist->tail;
+      }
+      lst->b = itr;
+      return lst;
+    case CheckPred:
+    case CheckBackref:
+      return lst; //Not supported
+    case BeginCap:
+    case EndCap:
+      return e_get_transitions_explore(swt->pi->b, lst, nfa);
+    case BranchAlt:
+      return e_get_transitions_explore(swt->pi->a, e_get_transitions_explore(swt->pi->b, lst, nfa), nfa);
+    case BranchKln:
+      if (swt->klnBool)
+        return e_get_transitions_explore(swt->pi->b, e_get_transitions_explore(swt->pi->a, lst, nfa), nfa);
+      else
+        return e_get_transitions_explore(swt->pi->a, e_get_transitions_explore(swt->pi->b, lst, nfa), nfa);
   }
 }
 
 struct llist<struct transition *> *get_transitions(struct nfa *nfa, int i) {
-  if (nfa->transitions[i] != NULL)
-    return nfa->transitions;
-  return explore(i, makePair<llist<int> *>(NULL, NULL));
+  struct llist<struct llist<struct transition *> *> *node = listAdvance<struct llist<struct transition *> *>(nfa->transitions, i);
+  if (node->head != NULL)
+    return node->head;
+  struct twople<struct llist<int> *, struct llist<struct transition *> *> *lst = e_get_transitions_explore(i, makeTwople<struct llist<int> *, struct llist<struct transition *> *>(NULL, NULL), nfa);
+  node->head = lst->b;
+  delete lst->a;
+  delete lst;
+  return node->head;
 }
