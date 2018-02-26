@@ -171,17 +171,11 @@ struct pair<int> *compile(struct regex *r, struct llist<struct state *> *sv, str
       }
       else {
         struct llist<struct pair<char> *> *t = new struct llist<struct pair<char> *>;
-        t->head = new struct pair<char>;
-        t->head->a = '\x00';
-        t->head->b = '\x09';
+        t->head = makePair<char>('\x00', '\x09');
         t->tail = new struct llist<struct pair<char> *>;
-        t->tail->head = new struct pair<char>;
-        t->tail->head->a = '\x0b';
-        t->tail->head->b = '\x0c';
+        t->tail->head = makePair<char>('\x0b', '\x0c');
         t->tail->tail = new struct llist<struct pair<char> *>;
-        t->tail->tail->head = new struct pair<char>;
-        t->tail->tail->head->a = '\x0e';
-        t->tail->tail->head->b = '\x7f';
+        t->tail->tail->head = makePair<char>('\x0e', '\x7f');
         t->tail->tail->tail = NULL;
         s->cl = t;
       }
@@ -384,7 +378,7 @@ struct nfa *make(regex *r, int flags) {
     ts = ts->tail;
   }
   //Initialise transitions
-  nfa->transitions = listInitialise<struct transition *>(NULL, state_count);
+  nfa->transitions = listInitialise<struct llist<struct transition *> *>(NULL, state_count);
   //Initialise positions
   nfa->positions = listInitialise<struct pair<int> *>(NULL, state_count);
   struct llist<struct pair<int> *> *tp = nfa->positions;

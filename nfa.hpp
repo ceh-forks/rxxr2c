@@ -34,6 +34,7 @@ struct nfa {
   int root;
 };
 
+struct state *get_state(struct nfa *, int);
 struct nfa *make(struct pattern *);
 //int root(struct t);
 //int size(struct t);

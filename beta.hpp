@@ -1,7 +1,7 @@
-#include "nfa.h"
-#include "word.h"
+#include "nfa.hpp"
+#include "word.hpp"
 
 struct llist<int> *make(int);
-struct btree<int> *elems(struct llist<int> *);
+struct llist<int> *elems(struct llist<int> *);
 struct llist<
 

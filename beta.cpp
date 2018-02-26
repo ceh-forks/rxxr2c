@@ -2,6 +2,7 @@
 #include "set.hpp"
 #include "error.hpp"
 #include "word.hpp"
+#include "flags.hpp"
 #include <iostream>
 
 struct llist<int> *make(int i) {
@@ -42,10 +43,10 @@ void btins(struct btree<int> *t, int i) {
   }
 }
 
-struct btree<int> *elems(struct llist<int> *l) {
-  struct btree<int> *t = NULL;
+struct llist<int> *elems(struct llist<int> *l) {
+  struct llist<int> *t = NULL;
   while(l) {
-    btins(t, l->head);
+    intset_add(l->head, t);
     l = l->tail;
   }
   return t;
@@ -141,8 +142,95 @@ struct llist<struct twople<word *, struct llist<int> *> *> *advance(struct nfa *
   return otr_collect(advance_fold_right(nfa, b, NULL), w, NULL);
 }
 
-int main(void) {
-  std::cout << "hello\n";
-  return 0;
+struct rec_evolve_struct {
+  int flgs;
+  struct llist<int> *eb;
+  struct llist<struct twople<int, struct llist<int> *> *> *hits;
+};
+
+struct evolve_struct {
+  struct nfa *nfa;
+  word *w;
+  struct llist<int> *b;
+  struct llist<int> *kset
+};
+
+struct rec_evolve_struct *evolve_rec(struct llist<int> *rb, struct llist<int> *st, struct rec_evolve_struct *revst, struct evolve_struct *evst) {
+  if (rb == NULL) {
+    revst->flgs = !(revst->flgs);
+    return revst;
+  }
+  else if (listMem<int>(rb->head, st))
+    return evolve_rec(rb->tail, st, revst, evst); //Already explored left-most occurence
+  struct llist<int> *st2 = intset_add(rb->head, st);
+  struct state *swt_state = get_state(evst->nfa, rb->head);
+  switch(swt_state->type) {
+    case End:
+    case Kill:
+      revst->eb = addListNode<int>(rb->head, revst->eb);
+      return evolve_rec(rb->tail, st, revst, evst);
+    case Pass:
+    case MakeB:
+    case EvalB:
+      return evolve_rec(addListNode<int>(swt_state->i, rb->tail), st, revst, evst);
+    case BeginCap:
+    case EndCap:
+      return evolve_rec(addListNode<int>(swt_state->pi->b, rb->tail), st, revst, evst);
+    case Match:
+      revst->eb = addListNode<int>(rb->head, revst->eb);
+      return evolve_rec(rb->tail, st, revst, evst);
+    case CheckPred:
+      if (swt_state->p->type == P_BOI) {
+        if (evst->w == NULL)
+          return evolve_rec(addListNode<int>(swt_state->i, rb->tail), st, revst, evst);
+        else
+          return evolve_rec(rb->tail, st, revst, evst);
+      }
+      else if (swt_state->p->type == P_BOL) {
+        if (evst->w == NULL || (evst->w->head->a <= '\n' && '\n' <= evst->w->head->b) || (swt_state->p->value == 1 && evst->w->head->a <= '\r' && '\r' <= evst->w->head->b))
+          return evolve_rec(addListNode<int>(swt_state->i, rb->tail), st, revst, evst);
+        else
+          return evolve_rec(rb->tail, st, revst, evst);
+      }
+      else if (swt_state->p->type == P_EOI) {
+        revst->eb = addListNode<int>(rb->head, revst->eb);
+        return evolve_rec(rb->tail, st, revst, evst);
+      }
+      else {
+        revst->flgs = set_interrupted(!(revst->flgs));
+        return evolve_rec(rb->tail, st, revst, evst);
+      }
+    case CheckBackref:
+      revst->flgs = set_interrupted(!(revst->flgs));
+      return evolve_rec(rb->tail, st, revst, evst);
+    case BranchAlt:
+      struct llist<int> *r = addListNode<int>(swt_state->pi->b, rb->tail);
+      r = addListNode<int>(swt_state->pi->a, r);
+      return evolve_rec(r, st, revst, evst);
+    case BranchKln:
+      if (listMem<int>(rb->head, evst->kset))
+        revst->hits = addListNode<struct twople<int, struct llist<int> *> *>(makeTwople<int, struct llist<int> *>(rb->head, addListNode<int>(rb->head, listCpy<int>(revst->eb))), revst->hits);
+      if (swt_state->klnBool == 1) {
+        struct llist<int> *r = addListNode<int>(swt_state->pi->b, rb->tail);
+        r = addListNode<int>(swt_state->pi->a, rb->tail);
+      }
+      else {
+        struct llist<int> *r = addListNode<int>(swt_state->pi->a, rb->tail);
+        r = addListNode<int>(swt_state->pi->b, rb->tail);
+      }
+      return evolve_rec(r, st, revst, evst);
+  }
 }
 
+struct rec_evolve_struct *evolve(struct nfa *nfa, word *w, struct llist<int> *b, struct llist<int> *kset) {
+  struct rec_evolve_struct *revst = new rec_evolve_struct;
+  revst->flgs = EMPTY;
+  revst->eb = NULL;
+  revst->hits = NULL;
+  struct evolve_struct *evst = new evolve_struct;
+  evst->nfa = nfa;
+  evst->w = w;
+  evst->b = b;
+  evst->kset = kset;
+  return evolve_rec(listRev(b), NULL, revst, evst);
+}

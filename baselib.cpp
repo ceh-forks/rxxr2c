@@ -39,6 +39,21 @@ struct llist<T> *addListNode(T item, struct llist<T> *node) {
 }
 
 template<typename T>
+struct llist<T> *listRev2(struct llist<T> *l, struct llist<T> *prev) {
+  if (l == NULL)
+    return prev;
+  else {
+    struct llist<T> *r = addListNode<T>(l->head, prev);
+    return listRev2(l->tail, r);
+  }
+}
+
+template<typename T>
+struct llist<T> *listRev(struct llist<T> *l) {
+  return listRev2(l, NULL);
+}
+
+template<typename T>
 int listMem(T item, struct llist<T> *node) {
   struct llist<T> *t = node;
   while(t) {

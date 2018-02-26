@@ -29,6 +29,9 @@ struct llist {
 template<typename T>
 struct llist<T> *addListNode(T, struct llist<T> *);
 
+template<typename T>
+struct llist<T> *listRev(struct llist<T> *);
+
 //Checks whether item is a member of a list
 template<typename T>
 int listMem(T, struct llist<T> *);
