@@ -117,3 +117,28 @@ word *itr_find_nomatch(struct inode *tr) {
   delete nm;
   return lst;
 }
+
+struct inode *explore_fold_left(struct inode *tr, struct llist<struct transition *> *trans) {
+  if (trans == NULL)
+    return tr;
+  else
+    return explore_fold_left(itr_add(tr, trans->head->a, trans->head->b, addListNode<int>(trans->head->c, NULL)), trans->tail);
+}
+
+struct inode *explore_intset_fold(struct llist<int> *i, inode *tr, struct nfa *nfa) {
+  if (i == NULL)
+    return tr;
+  else {
+    struct llist<struct transition *> *trans = get_transitions(nfa, i->head);
+    struct inode *r = explore_intset_fold(i->tail, explore_fold_left(tr, trans), nfa);
+    deleteListWithPointers<struct transition *>(trans);
+    return r;
+  }
+}
+
+struct twople <struct llist<struct phi_w_prefix *> *, word *> *explore(struct nfa *nfa, word *w, struct llist<int> *p) {
+  struct inode *tr = explore_intset_fold(p, NULL, nfa);
+  struct llist<struct phi_w_prefix *> *r1 = itr_collect(tr, w, NULL);
+  word *r2 = itr_find_nomatch(tr);
+  return makeTwople<struct llist<struct phi_w_prefix *> *, word *>(r1, r2);
+}

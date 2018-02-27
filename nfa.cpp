@@ -450,7 +450,7 @@ struct llist<struct transition *> *get_transitions(struct nfa *nfa, int i) {
     return node->head;
   struct twople<struct llist<int> *, struct llist<struct transition *> *> *lst = e_get_transitions_explore(i, makeTwople<struct llist<int> *, struct llist<struct transition *> *>(NULL, NULL), nfa);
   node->head = lst->b;
-  delete lst->a;
+  deleteList<int>(lst->a);
   delete lst;
   return node->head;
 }

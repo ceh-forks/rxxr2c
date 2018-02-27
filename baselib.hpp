@@ -20,14 +20,18 @@ template<typename T>
 struct llist {
   T head;
   struct llist<T> *tail;
-
-  ~llist() {
-    delete tail;
-  }
 };
 
 template<typename T>
 struct llist<T> *addListNode(T, struct llist<T> *);
+
+//Delete basic lists (int, char etc.)
+template <typename T>
+void deleteList(struct llist<T> *);
+
+//Delete advanced lists (i.e. type is a struct)
+template <typename T>
+void deleteListWithPointers(struct llist<T> *);
 
 template<typename T>
 struct llist<T> *listRev(struct llist<T> *);
