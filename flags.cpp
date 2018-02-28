@@ -1,4 +1,4 @@
-#include "flags.h"
+#include "flags.hpp"
 #include<stdio.h>
 
 int is_empty(int f) {

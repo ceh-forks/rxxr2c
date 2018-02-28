@@ -152,12 +152,11 @@ struct evolve_struct {
   struct nfa *nfa;
   word *w;
   struct llist<int> *b;
-  struct llist<int> *kset
+  struct llist<int> *kset;
 };
 
 struct rec_evolve_struct *evolve_rec(struct llist<int> *rb, struct llist<int> *st, struct rec_evolve_struct *revst, struct evolve_struct *evst) {
   if (rb == NULL) {
-    revst->flgs = !(revst->flgs);
     return revst;
   }
   else if (listMem<int>(rb->head, st))
@@ -197,11 +196,11 @@ struct rec_evolve_struct *evolve_rec(struct llist<int> *rb, struct llist<int> *s
         return evolve_rec(rb->tail, st, revst, evst);
       }
       else {
-        revst->flgs = set_interrupted(!(revst->flgs));
+        revst->flgs = set_interrupted(revst->flgs);
         return evolve_rec(rb->tail, st, revst, evst);
       }
     case CheckBackref:
-      revst->flgs = set_interrupted(!(revst->flgs));
+      revst->flgs = set_interrupted(revst->flgs);
       return evolve_rec(rb->tail, st, revst, evst);
     case BranchAlt:
       struct llist<int> *r = addListNode<int>(swt_state->pi->b, rb->tail);

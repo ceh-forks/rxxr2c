@@ -40,6 +40,8 @@ struct llist<T> *addListNode(T item, struct llist<T> *node) {
 
 template <typename T>
 void deleteList(struct llist<T> *l) {
+  if (l == NULL)
+    return;
   struct llist<T> *t = l->tail;
   delete l;
   deleteList(t);
@@ -47,6 +49,8 @@ void deleteList(struct llist<T> *l) {
 
 template <typename T>
 void deleteListWithPointers(struct llist<T> *l) {
+  if (l == NULL)
+    return;
   struct llist<T> *t = l->tail;
   delete l->head;
   delete l;
