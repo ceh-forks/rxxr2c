@@ -340,6 +340,28 @@ struct phi_simulate_struct *chr_simulate(struct nfa *nfa, word *w, struct llist<
   return chr_simulate_rec(listRev<int>(p), NULL, NULL, nfa, w, c, flgs);
 }
 
+//Simulate the phi character-by-character
+struct phi_simulate_struct *phi_simulate_fold(struct phi_simulate_struct *ph, struct llist<char> *c, struct nfa *nfa, word *w, struct llist<int> *p) {
+  if (c == NULL)
+    return ph;
+  struct phi_simulate_struct *ph2 = chr_simulate(nfa, w, p, c->head);
+  ph2->flgs = uni(ph->flgs, ph2->flgs);
+  deleteList<int>(ph->lst);
+  deleteListWithPointers<struct pair<char> *>(ph->w);
+  delete ph;
+  return phi_simulate_fold(ph2, c, nfa, w, p);
+}
+
 struct phi_simulate_struct *phi_simulate(struct nfa *nfa, word *w, struct llist<int> *p, struct llist<char> *cl) {
-  
+  struct phi_simulate_struct *ph = new phi_simulate_struct;
+  ph->flgs = EMPTY;
+  ph->w = w;
+  ph->lst = p;
+  ph = phi_simulate_fold(ph, cl, nfa, w, p);
+  struct phi_evolve_struct *phe = phi_evolve(nfa, ph->w, ph->lst, 0);
+  ph->flgs = uni(ph->flgs, phe->flgs);
+  deleteList<int>(ph->lst);
+  ph->lst = phe->lst;
+  delete phe;
+  return ph;
 }

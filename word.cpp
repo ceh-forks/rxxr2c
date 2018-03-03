@@ -1,7 +1,7 @@
 #include "baselib.hpp"
 
 typedef struct pair<char> crange; //Character range
-typedef struct llist<pair<char> *> word;
+typedef struct llist<struct pair<char> *> word;
 
 word *word_extend(word *w, crange *cc) {
   return addListNode<crange *>(cc, w);
