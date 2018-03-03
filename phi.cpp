@@ -247,11 +247,99 @@ struct phi_evolve_struct *phi_evolve(struct nfa *nfa, word *w, struct llist<int>
 }
 
 //Check if given character class includes target character
-short matches (struct llist<struct pair<char> *> *cls, char c) {
+short matches (struct llist<crange *> *cls, char c) {
   if (cls == NULL)
     return 0;
   else if (cls->head->a <= c && c <= cls->head->b)
     return 1;
   else
     return matches(cls->tail, c);
+}
+
+struct phi_simulate_struct {
+  int flgs;
+  word *w;
+  struct llist<int> *lst;
+};
+
+struct phi_simulate_struct *chr_simulate_rec(struct llist<int> *l, struct llist<int> *st, struct llist<int> *rp, struct nfa *nfa, word *w, char c, int flgs) {
+  if (l == NULL) {
+    struct phi_simulate_struct *r = new phi_simulate_struct;
+    r->flgs = flgs;
+    crange *cc = new crange;
+    cc->a = c;
+    cc->b = c;
+    r->w = word_extend(w, cc);
+    r->lst = rp;
+    deleteList<int>(st);
+    return r;
+  }
+  else if (listMem<int>(l->head, st))
+    chr_simulate_rec(l->tail, st, rp, nfa, w, c, flgs);
+  st = intset_add(l->head, st);
+  struct state *swt_state = get_state(nfa, l->head);
+  switch(swt_state->type) {
+    case End:
+    case Kill:
+      struct llist<int> *l2 = l->tail;
+      delete l;
+      return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+    case Pass:
+    case MakeB:
+    case EvalB:
+      struct llist<int> *l2 = addListNode<int>(swt_state->i, l->tail);
+      delete l;
+      return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+    case BeginCap:
+    case EndCap:
+      struct llist<int> *l2 = addListNode<int>(swt_state->pi->b, l->tail);
+      delete l;
+      return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+    //This is where the matching / failing happens
+    case Match:
+      if (matches(swt_state->cl, c))
+        rp = intset_add(swt_state->i, rp);
+      struct llist<int> *l2 = l->tail;
+      delete l;
+      return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+    case CheckPred:
+      if (swt_state->p->type == P_BOI || swt_state->p->type == P_BOL) {
+        struct llist<int> *l2 = l->tail;
+        if (w == NULL || (swt_state->p->type == P_BOL && ((w->head->a <= '\n' && '\n' <= w->head->b) || (swt_state->p->value == 1 && w->head->a <= '\r' && '\r' <= w->head->b))))
+          l2 = addListNode<int>(swt_state->i, l2);
+        delete l;
+        return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+      }
+      else if (swt_state->p->type == P_EOI) {
+        struct llist<int> *l2 = l->tail;
+        delete l;
+        return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+      }
+      else {
+        flgs = set_interrupted(flgs);
+        struct llist<int> *l2 = l->tail;
+        delete l;
+        return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+      }
+    case CheckBackref:
+      flgs = set_interrupted(flgs);
+      struct llist<int> *l2 = l->tail;
+      delete l;
+      return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+    case BranchAlt:
+    case BranchKln:
+      struct llist<int> *l2 = addListNode<int>(swt_state->pi->b, l->tail);
+      l2 = addListNode<int>(swt_state->pi->b, l2);
+      delete l;
+      return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+  }
+}
+
+struct phi_simulate_struct *chr_simulate(struct nfa *nfa, word *w, struct llist<int> *p, char c) {
+  int flgs = EMPTY;
+  return chr_simulate_rec(listRev<int>(p), NULL, NULL, nfa, w, c, flgs);
+}
+
+struct phi_simulate_struct *phi_simulate(struct nfa *nfa, word *w, struct llist<int> *p, struct llist<char> *cl) {
+  
 }
