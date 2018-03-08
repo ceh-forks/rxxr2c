@@ -1,7 +1,7 @@
 #include "baselib.hpp"
 #include "error.hpp"
 
-llist<int> *intset_add(int i, llist<int> *l) {
+struct llist<int> *intset_add(int i, struct llist<int> *l) {
   if (l == NULL)
     return addListNode<int>(i, l);
   else if (i > l->head) {
@@ -12,9 +12,9 @@ llist<int> *intset_add(int i, llist<int> *l) {
     return addListNode<int>(i, l);
 }
 
-llist<int> *intset_union(llist<int> *l1, llist<int> *l2) {
-  llist<int> *t1 = listCpy<int>(l1);
-  llist<int> *t2 = l2;
+struct llist<int> *intset_union(struct llist<int> *l1, struct llist<int> *l2) {
+  struct llist<int> *t1 = listCpy<int>(l1);
+  struct llist<int> *t2 = l2;
   while(t2) {
     t1 = intset_add(t2->head, t1);
     t2 = t2->tail;

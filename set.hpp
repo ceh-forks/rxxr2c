@@ -7,3 +7,5 @@ llist<int> *intset_add(int, llist<int> *);
 
 //Creates the union of two intsets
 llist<int> *intset_union(llist<int> *l1, llist<int> *l2);
+
+int compare_intlist(struct llist<int> *, struct llist<int> *);
