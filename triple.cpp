@@ -86,28 +86,46 @@ struct ttnode *ttr_add(struct ttnode *tr, char u, char v, struct llist<int> *s1,
   }
 }
 
-struct llist<struct twople<word *, struct triple *> *> *ttr_collect_fold1(struct llist<int> *js, struct llist<struct twople<word *, struct triple *> *> *l, struct ttnode *tr, word *w, int i, struct llist<int> *p) {
-  if (js == NULL)
-    return l;
-  else {
-    word *rw = word_extend(w, makePair<char>(tr->c1, tr->c2));
-    struct triple *rt = triple_make(min(i, js->head), max(i, js->head), p);
-    struct llist<struct twople<word *, struct triple *> *> *r = addListNode<struct twople<word *, struct triple *> *>(makeTwople<word *, struct triple *>(rw, rt), l);
-    return ttr_collect_fold1(js->tail, r, tr, w, i, p);
-  }
-}
-
-struct llist<struct twople<word *, struct triple *> *> *ttr_collect_fold2(struct llist<int> *is, struct llist<struct twople<word *, struct triple *> *> *l, struct ttnode *tr, word *w, struct llist<int> *p) {
-  if (is == NULL)
-    return l;
-  else
-    return ttr_collect_fold1(tr->l2, l, tr, w, is->head, p);
-}
-
 struct llist<struct twople<word *, struct triple *> *> *ttr_collect(ttnode *tr, word *w, struct llist<struct twople<word *, struct triple *> *> *lst) {
   if (tr == NULL)
     return lst;
-  struct llist<int> *p = tr->l3;
-  struct llist<struct twople<word *, struct triple *> *> *lst = ttr_collect_fold2(tr->l1, lst, tr, w, p);
+  struct llist<int> *iter = tr->l1;
+  while(iter) {
+    struct llist<int> *iter2 = tr->l2;
+    while (iter2) {
+      word *rw = word_extend(w, makePair<char>(tr->c1, tr->c2));
+      struct triple *rt = triple_make(min(iter->head, iter2->head), max(iter->head, iter2->head), tr->l3);
+      lst = addListNode<struct twople<word *, struct triple *> *>(makeTwople<word *, struct triple *>(rw, rt), lst);
+      iter2 = iter2->tail;
+    }
+    iter = iter->tail;
+  }
   return ttr_collect(tr->tr, w, ttr_collect(tr->tl, w, lst));
 }
+
+struct llist<struct twople<word *, struct triple *> *> *triple_advance(struct nfa *nfa, word *w, struct triple *t) {
+  struct ttnode *tr = NULL;
+  struct llist<struct transition *> *trans, *iter;
+  trans = get_transitions(nfa, t->i1);
+  iter = trans;
+  while (iter) {
+    tr = ttr_add(tr, iter->head->a, iter->head->b, addListNode<int>(iter->head->c, NULL), NULL, NULL);
+    iter = iter->tail;
+  }
+  iter = get_transitions(nfa, t->i2);
+  while (iter) {
+    tr = ttr_add(tr, iter->head->a, iter->head->b, NULL, addListNode<int>(iter->head->c, NULL), NULL);
+    iter = iter->tail;
+  }
+  struct llist<int> *iter2 = t->phi;
+  while(iter2) {
+    iter = get_transitions(nfa, iter2->head);
+    while(iter) {
+      tr = ttr_add(tr, iter->head->a, iter->head->b, NULL, NULL, addListNode<int>(iter->head->c, NULL));
+      iter = iter->tail;
+    }
+    iter2 = iter2->tail;
+  }
+  return ttr_collect(tr, w, NULL);
+}
+
