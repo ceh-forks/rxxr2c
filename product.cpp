@@ -1,5 +1,7 @@
 #include "phi.hpp"
 #include "set.hpp"
+#include "flags.hpp"
+#include "triple.hpp"
 
 struct product {
   int i;
@@ -146,4 +148,83 @@ struct llist<struct twople<word *, struct product *> *> *product_advance(struct 
   return ptr_collect(tr, w, NULL);
 }
 
-//TODO: when Triple done
+struct product_evolve_struct {
+  int flags;
+  struct product *product;
+  struct llist<struct triple *> *triple;
+};
+
+struct product_evolve_struct *product_evolve_rec(struct llist<int> *pl, struct llist<int> *st, struct llist<struct triple *> *tpl, int flags, int i, struct llist<int> *ep, struct nfa *nfa, word *w, struct llist<int> *brset) {
+  if (pl == NULL) {
+    struct product_evolve_struct *r = new product_evolve_struct;
+    r->flags = flags;
+    r->product = product_make(i, ep);
+    r->triple = tpl;
+    deleteList<int>(ep);
+    deleteList<int>(st);
+    return r;
+  }
+  else if (listMem<int>(i, st))
+    return product_evolve_rec(pl->tail, st, tpl, flags, i, ep, nfa, w, brset);
+  st = intset_add(pl->head, st);
+  struct state *swt_state = get_state(nfa, pl->head);
+  switch(swt_state->type) {
+    case End:
+    case Kill:
+    case Match:
+      struct llist<int> *pl2 = pl->tail;
+      delete pl;
+      return product_evolve_rec(pl2, st, tpl, flags, i, ep, nfa, w, brset);
+    case Pass:
+    case MakeB:
+    case EvalB:
+      struct llist<int> *pl2 = addListNode<int>(swt_state->i, pl->tail);
+      delete pl;
+      return product_evolve_rec(pl2, st, tpl, flags, i, ep, nfa, w, brset);
+    case BeginCap:
+    case EndCap:
+      struct llist<int> *pl2 = addListNode<int>(swt_state->pi->b, pl->tail);
+      delete pl;
+      return product_evolve_rec(pl2, st, tpl, flags, i, ep, nfa, w, brset);
+    case CheckPred:
+      if (swt_state->p->type == P_BOI || swt_state->p->type == P_BOL || swt_state->p->type == P_EOI) {
+        if (swt_state->p->type != P_EOI && (w == NULL || (swt_state->p->type == P_BOL && ((w->head->a <= '\n' && '\n' <= w->head->b) || (swt_state->p->value && w->head->a <= '\r' && '\r' <= w->head->b))))) {
+          struct llist<int> *pl2 = addListNode<int>(swt_state->i, pl->tail);
+          delete pl;
+          return product_evolve_rec(pl2, st, tpl, flags, i, ep, nfa, w, brset);
+        }
+        else {
+          struct llist<int> *pl2 = pl->tail;
+          delete pl;
+          return product_evolve_rec(pl2, st, tpl, flags, i, ep, nfa, w, brset);
+        }
+      }
+      else {
+        flags = set_interrupted(flags);
+        struct llist<int> *pl2 = pl->tail;
+        delete pl;
+        return product_evolve_rec(pl2, st, tpl, flags, i, ep, nfa, w, brset);
+      }
+    case CheckBackref:
+      flags = set_interrupted(flags);
+      struct llist<int> *pl2 = pl->tail;
+      delete pl;
+      return product_evolve_rec(pl2, st, tpl, flags, i, ep, nfa, w, brset);
+    case BranchAlt:
+    case BranchKln:
+      if (listMem<int>(i, brset))
+        tpl = addListNode<struct triple *>(triple_make(swt_state->pi->a, swt_state->pi->b, ep), tpl);
+        struct llist<int> *pl2 = addListNode<int>(swt_state->pi->b, pl->tail);
+        pl2 = addListNode<int>(swt_state->pi->a, pl2);
+        delete pl;
+        return product_evolve_rec(pl2, st, tpl, flags, i, ep, nfa, w, brset);
+  }
+}
+
+struct product_evolve_struct *product_evolve(struct nfa *nfa, word *w, struct product *p, struct llist<int> *brset) {
+  struct phi_evolve_struct *phi_evolved = phi_evolve(nfa, w, p->phi, NULL);
+  int flgs = phi_evolved->flgs;
+  struct llist<int> *ep = phi_evolved->lst;
+  delete phi_evolved;
+  return product_evolve_rec(addListNode<int>(p->i, NULL), NULL, NULL, flgs, p->i, ep, nfa, w, brset);
+}

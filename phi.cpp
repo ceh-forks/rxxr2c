@@ -3,6 +3,7 @@
 #include "word.hpp"
 #include "set.hpp"
 #include "flags.hpp"
+#include "phi.hpp"
 
 struct phi_w_prefix { // Phis with prefixes
   word *w;
@@ -149,11 +150,6 @@ struct twople <struct llist<struct phi_w_prefix *> *, word *> *explore(struct nf
   word *r2 = itr_find_nomatch(tr);
   return makeTwople<struct llist<struct phi_w_prefix *> *, word *>(r1, r2);
 }
-
-struct phi_evolve_struct {
-  int flgs;
-  struct llist<int> *lst;
-};
 
 struct phi_evolve_struct *evolve_rec(struct llist<int> *pl, struct llist<int> *st, struct llist<int> *ep, struct nfa *nfa, word *w, int iopt, int flgs) {
   if (pl == NULL) {

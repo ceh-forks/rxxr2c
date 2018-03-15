@@ -1,13 +1,7 @@
 #include "nfa.hpp"
 #include "set.hpp"
 #include "word.hpp"
-
-//NFA state pair + phi
-struct triple {
-  int i1;
-  int i2;
-  struct llist<int> *phi;
-};
+#include "triple.hpp"
 
 struct triple *triple_make(int i1, int i2, struct llist<int> *phi) {
   struct triple *r = new struct triple;
