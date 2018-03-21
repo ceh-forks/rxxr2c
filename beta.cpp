@@ -5,7 +5,7 @@
 #include "flags.hpp"
 #include <iostream>
 
-struct llist<int> *make(int i) {
+struct llist<int> *beta_make(int i) {
   struct llist<int> *r = new struct llist<int>;
   r->head = i;
   r->tail = NULL;
@@ -138,7 +138,7 @@ struct btree<struct beta *> *advance_fold_right(struct nfa *nfa, struct llist<in
     return advance_fold_right(nfa, l->tail, advance_fold_left(tr, get_transitions(nfa, l->head)));
 }
 
-struct llist<struct twople<word *, struct llist<int> *> *> *advance(struct nfa *nfa, word *w, llist<int> *b) {
+struct llist<struct twople<word *, struct llist<int> *> *> *beta_advance(struct nfa *nfa, word *w, llist<int> *b) {
   return otr_collect(advance_fold_right(nfa, b, NULL), w, NULL);
 }
 
@@ -157,6 +157,8 @@ struct evolve_struct {
 
 struct rec_evolve_struct *evolve_rec(struct llist<int> *rb, struct llist<int> *st, struct rec_evolve_struct *revst, struct evolve_struct *evst) {
   if (rb == NULL) {
+    deleteList<int>(st);
+    delete evst;
     return revst;
   }
   else if (listMem<int>(rb->head, st))
@@ -221,7 +223,7 @@ struct rec_evolve_struct *evolve_rec(struct llist<int> *rb, struct llist<int> *s
   }
 }
 
-struct rec_evolve_struct *evolve(struct nfa *nfa, word *w, struct llist<int> *b, struct llist<int> *kset) {
+struct rec_evolve_struct *beta_evolve(struct nfa *nfa, word *w, struct llist<int> *b, struct llist<int> *kset) {
   struct rec_evolve_struct *revst = new rec_evolve_struct;
   revst->flgs = EMPTY;
   revst->eb = NULL;

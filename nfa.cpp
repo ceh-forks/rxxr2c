@@ -399,7 +399,7 @@ struct state *get_state(struct nfa *nfa, int i) {
 struct twople<struct llist<int> *, struct llist<struct transition *> *> *e_get_transitions_explore(int i, struct twople<struct llist<int> *, struct llist<struct transition *> *> *lst, struct nfa *nfa) {
   if(listMem<int>(i, lst->a))
     return lst;
-  struct llist<int> *st = intset_add(i, lst->a);
+  lst->a = intset_add(i, lst->a);
   struct state *swt = get_state(nfa, i);
   switch (swt->type) {
     case Kill:

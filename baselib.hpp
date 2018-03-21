@@ -40,6 +40,10 @@ struct llist<T> *listRev(struct llist<T> *);
 template<typename T>
 int listMem(T, struct llist<T> *);
 
+//Checks whether two lists are equal
+template<typename T>
+bool listSame(struct llist<T> *, struct llist<T> *);
+
 template<typename T>
 int listLength(struct llist<T> *);
 

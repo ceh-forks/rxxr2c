@@ -85,6 +85,20 @@ int listMem(T item, struct llist<T> *node) {
 }
 
 template<typename T>
+bool listSame(struct llist<T> *l1, struct llist<T> *l2) {
+  while(l1 && l2) {
+    if(l1->head == l2->head) {
+      l1 = l1->tail;
+      l2 = l2->tail;
+    }
+    else {
+      return false;
+    }
+  }
+  return true;
+}
+
+template<typename T>
 struct llist<T> *listInitialise(T item, int i) {
   if (i == 1)
     return addListNode<T>(item, NULL);

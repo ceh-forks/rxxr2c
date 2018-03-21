@@ -80,19 +80,20 @@ make_range(int r, struct range *rng, struct pair<int> *cpos) {
 
 %}
 
-%token <(int * int) * char> Literal
-%token <(int * int) * ParsingData.pred> Anchor
-%token <int * ParsingData.gkind> GrpOpen
-%token <(int * int)> BeginQuote EndQuote
+%token <int> Literal
+%token <int> Anchor
+%token <int> GrpOpen
+%token <int> BeginQuote EndQuote
 %token <int> TkDot ModsGrpOpen Mod GrpClose ClsClose 
-%token <(int * int) * int> TkBackref
-%token <int * bool> ClsOpen
-%token <char * char> ClsRange
-%token <(int * int) * ((char * char) list)> ClsNamed
-%token <int * (int * int * ParsingData.qfier)> Repetition
+%token <int> TkBackref
+%token <int> ClsOpen
+%token <char> ClsRange
+%token <int> ClsNamed
+%token <int> Repetition
 %token VBar NegMods EndMods Eos
 
 %start parse
+%type <int> parse
 %%
 
 parse: Eos { make_r(makeOne(), 0, 0); } 

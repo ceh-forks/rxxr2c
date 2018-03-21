@@ -10,6 +10,17 @@ struct phi_w_prefix { // Phis with prefixes
   llist<int> *p;
 };
 
+struct llist<struct llist<int> *> *phiset_add(struct llist<int> *l, struct llist<struct llist<int> *> *phiset) {
+  if (phiset == NULL)
+    return addListNode<struct llist<int> *>(l, phiset);
+  else if (compare_intlist(l, phiset->head) == 1) {
+    phiset->tail = phiset_add(l, phiset->tail);
+    return phiset;
+  }
+  else
+    return addListNode<struct llist<int> *>(l, phiset);
+}
+
 struct inode { // Tree of phis
   char c1;
   char c2;
