@@ -37,6 +37,18 @@ struct llist<struct triple *> *tripleset_add(struct triple *t, struct llist<stru
     return addListNode<struct triple *>(t, tl);
 }
 
+bool tripleset_mem(struct triple *t, struct llist<struct triple *> *l) {
+  if (t == NULL)
+    return false;
+  while(l) {
+    if(t->i1 == l->head->i1 && t->i2 == l->head->i2 && listSame<int>(t->phi, l->head->phi))
+      return true;
+    else
+      l = l->tail;
+  }
+  return false;
+}
+
 struct ttnode {
   char c1;
   char c2;

@@ -148,6 +148,18 @@ struct llist<struct twople<word *, struct product *> *> *product_advance(struct 
   return ptr_collect(tr, w, NULL);
 }
 
+bool productset_mem(struct product *p, struct llist<struct product *> *l) {
+  if (p == NULL)
+    return false;
+  while(l) {
+    if(p->i == l->head->i && listSame<int>(p->phi, l->head->phi))
+      return true;
+    else
+      l = l->tail;
+  }
+  return false;
+}
+
 struct product_evolve_struct {
   int flags;
   struct product *product;

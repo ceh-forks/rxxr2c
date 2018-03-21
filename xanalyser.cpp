@@ -83,6 +83,7 @@ struct xanalyser_next_struct *xanalyser_next(struct xanalyserstruct *m) {
     m->flgs = uni(b->flgs, m->flgs);
     deleteList<int>(b->eb);
     delete b;
+    delete t->head;
     delete t;
     return xanalyser_next(m);
   }
@@ -101,6 +102,7 @@ struct xanalyser_next_struct *xanalyser_next(struct xanalyserstruct *m) {
       else
         iter = iter->tail;
     }
+    delete t->head;
     delete t;
     return xanalyser_next(m);
   }
