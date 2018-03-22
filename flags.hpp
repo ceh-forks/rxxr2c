@@ -1,3 +1,6 @@
+#ifndef FLAGS_H
+#define FLAGS_H
+
 #define EMPTY 0
 #define INTERRUPTED 1
 #define ACCEPTING 2
@@ -21,3 +24,4 @@ int set_pruned(int);
 
 int uni(int, int);
 
+#endif

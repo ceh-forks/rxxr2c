@@ -1,4 +1,5 @@
-#include "baselib.hpp"
+#ifndef WORD_H
+#define WORD_H
 
 typedef struct pair<char> crange; //Character range
 typedef struct llist<pair<char> *> word; //List of character ranges stored in reverse order
@@ -16,3 +17,4 @@ struct llist<char> *word_select(struct llist<struct pair<char> *> *);
 char *word_print(void);
 char *word_print_select(word);
 
+#endif

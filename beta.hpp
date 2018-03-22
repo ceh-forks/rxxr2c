@@ -1,4 +1,7 @@
-#include "nfa.hpp"
+#ifndef BETA_H
+#define BETA_H
+
+#include "baselib.hpp"
 #include "word.hpp"
 
 struct rec_evolve_struct {
@@ -13,4 +16,4 @@ struct rec_evolve_struct *beta_evolve(struct nfa *nfa, word *w, struct llist<int
 struct llist<int> *betaset_add(int, struct llist<int> *);
 struct llist<struct twople<word *, struct llist<int> *> *> *beta_advance(struct nfa *nfa, word *w, llist<int> *b);
 
-
+#endif

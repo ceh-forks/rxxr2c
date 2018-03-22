@@ -17,6 +17,21 @@ struct y1analyser_struct {
   int flgs;
 };
 
+struct y1analyser_struct *y1analyser_init(struct nfa *nfa, word *w, struct llist<int> *p, int ik, struct llist<int> *brset) {
+  struct y1analyser_struct *r = new y1analyser_struct;
+  r->nfa = nfa;
+  r->ik = ik;
+  r->brset = brset;
+  r->w = w;
+  r->pcache = NULL;
+  r->tcache = NULL;
+  r->tpls = NULL;
+  //start with evolving the kleene state and the corresponding phi
+  r->evolve = addListNode<struct twople<word *, struct product *> *>(makeTwople<word *, struct product *>(w, product_make(ik, p)), NULL);
+  r->advance = NULL;
+  r->flgs = EMPTY;
+}
+
 struct twople<word *, struct triple *> *y1analyser_next(struct y1analyser_struct *m) {
   if (m->tpls != NULL) {
     struct llist<struct twople<word *, struct triple *> *> *t = m->tpls;

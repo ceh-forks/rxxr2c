@@ -117,8 +117,8 @@ void decorate_regex(struct regex *r, int flags) {
 }
 
 struct pair<int> *compile(struct regex *r, struct llist<struct state *> *sv, struct llist<struct pair<int> *> *pv, int next, int kont, int flags) {
-  exp *e = r->expression;
-  meta *m = r->metadata;
+  struct exp *e = r->expression;
+  struct meta *m = r->metadata;
   switch(e->type) {
     case Zero: {
       struct pair<int> *p = listAdvance<struct pair<int> *>(pv, next)->head;
@@ -402,20 +402,22 @@ struct twople<struct llist<int> *, struct llist<struct transition *> *> *e_get_t
   lst->a = intset_add(i, lst->a);
   struct state *swt = get_state(nfa, i);
   switch (swt->type) {
-    case Kill:
+    case Kill: {
       return lst;
-    case End:
+    }
+    case End: {
       struct transition *trans = new struct transition;
       trans->a = ZMIN;
       trans->b = ZMAX;
       trans->c = i;
       lst->b = addListNode<struct transition *>(trans, lst->b);
       return lst;
+    }
     case Pass:
     case MakeB:
     case EvalB:
       return e_get_transitions_explore(swt->i, lst, nfa);
-    case Match:
+    case Match: {
       struct llist<struct transition *> *itr = lst->b;
       struct llist<struct pair<char> *> *foldlist = swt->cl;
       while(foldlist) {
@@ -428,19 +430,24 @@ struct twople<struct llist<int> *, struct llist<struct transition *> *> *e_get_t
       }
       lst->b = itr;
       return lst;
+    }
     case CheckPred:
-    case CheckBackref:
+    case CheckBackref: {
       return lst; //Not supported
+    }
     case BeginCap:
-    case EndCap:
+    case EndCap: {
       return e_get_transitions_explore(swt->pi->b, lst, nfa);
-    case BranchAlt:
+    }
+    case BranchAlt: {
       return e_get_transitions_explore(swt->pi->a, e_get_transitions_explore(swt->pi->b, lst, nfa), nfa);
-    case BranchKln:
+    }
+    case BranchKln: {
       if (swt->klnBool)
         return e_get_transitions_explore(swt->pi->b, e_get_transitions_explore(swt->pi->a, lst, nfa), nfa);
       else
         return e_get_transitions_explore(swt->pi->a, e_get_transitions_explore(swt->pi->b, lst, nfa), nfa);
+    }
   }
 }
 

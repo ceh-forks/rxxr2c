@@ -1,3 +1,6 @@
+#ifndef SET_H
+#define SET_H
+
 #include "baselib.hpp"
 
 //Intsets are represented by llist<int>
@@ -9,3 +12,5 @@ llist<int> *intset_add(int, llist<int> *);
 llist<int> *intset_union(llist<int> *l1, llist<int> *l2);
 
 int compare_intlist(struct llist<int> *, struct llist<int> *);
+
+#endif

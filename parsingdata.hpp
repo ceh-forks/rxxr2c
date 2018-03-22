@@ -1,5 +1,9 @@
-/* Lexing / parsing structures & functions */
+#ifndef PDATA_H
+#define PDATA_H
+
 #include "baselib.hpp"
+
+/* Lexing / parsing structures & functions */
 //Flags for regex lexer
 #define FLAG_UNIX_LINES 1
 #define FLAG_NO_CASE 2
@@ -130,3 +134,5 @@ struct exp *makeBackref(int);
 struct exp *makeConc(struct regex *, struct regex *);
 struct exp *makeAlt(struct regex *, struct regex *);
 struct exp *makeKleene(enum qfier, struct regex *);
+
+#endif

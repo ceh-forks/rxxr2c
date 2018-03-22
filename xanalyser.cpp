@@ -46,7 +46,7 @@ struct xanalyser_next_struct *xanalyser_next(struct xanalyserstruct *m) {
     struct llist<struct twople<int, struct llist<int> *> *> *t = m->hits;
     m->hits = t->tail;
     struct llist<int> *p = beta_elems(t->head->b);
-    phi_evolve_struct *ep = phi_evolve(m->nfa, m->w, p, NULL);
+    phi_evolve_struct *ep = phi_evolve(m->nfa, m->w, p, 0);
     deleteList<int>(p);
     struct llist<struct llist<int> *> *iter = m->pcache;
     while(iter) {
@@ -90,17 +90,12 @@ struct xanalyser_next_struct *xanalyser_next(struct xanalyserstruct *m) {
   else if (m->advance != NULL) {
     struct llist<struct twople<word *, struct llist<int> *> *> *t = m->advance;
     m->advance = t->tail;
-    struct llist<struct llist<int> *> *iter = m->bcache;
-    while(iter) {
-      if (!listSame<int>(t->head->b, iter->head)) {
-        //Never seen before beta, advance
-        m->pcache = phiset_add(t->head->b, m->pcache); //betaset works same as phi
-        m->evolve = beta_advance(m->nfa, t->head->a, t->head->b);
-        delete t;
-        return xanalyser_next(m);
-      }
-      else
-        iter = iter->tail;
+    if(!phiset_mem(t->head->b, m->bcache)) {
+      //Never seen before beta, advance
+      m->pcache = phiset_add(t->head->b, m->pcache); //betaset works same as phi
+      m->evolve = beta_advance(m->nfa, t->head->a, t->head->b);
+      delete t;
+      return xanalyser_next(m);
     }
     delete t->head;
     delete t;

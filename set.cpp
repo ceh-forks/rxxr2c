@@ -1,4 +1,5 @@
 #include "baselib.hpp"
+#include "set.hpp"
 #include "error.hpp"
 
 struct llist<int> *intset_add(int i, struct llist<int> *l) {

@@ -1,3 +1,6 @@
+#ifndef NFA_H
+#define NFA_H
+
 #include "baselib.hpp"
 
 enum prede {P_BOI, P_EOI, P_EOIX, P_BOL, P_EOL, P_EOM, P_WB, P_NWB};
@@ -43,3 +46,4 @@ struct nfa *make(struct pattern *);
 
 struct llist<struct transition *> *get_transitions(struct nfa *nfa, int i);
 
+#endif

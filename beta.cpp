@@ -1,9 +1,9 @@
+#include "baselib.hpp"
 #include "nfa.hpp"
 #include "set.hpp"
 #include "error.hpp"
 #include "word.hpp"
 #include "flags.hpp"
-#include <iostream>
 
 struct llist<int> *beta_make(int i) {
   struct llist<int> *r = new struct llist<int>;
@@ -167,20 +167,24 @@ struct rec_evolve_struct *evolve_rec(struct llist<int> *rb, struct llist<int> *s
   struct state *swt_state = get_state(evst->nfa, rb->head);
   switch(swt_state->type) {
     case End:
-    case Kill:
+    case Kill: {
       revst->eb = addListNode<int>(rb->head, revst->eb);
       return evolve_rec(rb->tail, st, revst, evst);
+    }
     case Pass:
     case MakeB:
-    case EvalB:
+    case EvalB: {
       return evolve_rec(addListNode<int>(swt_state->i, rb->tail), st, revst, evst);
+    }
     case BeginCap:
-    case EndCap:
+    case EndCap: {
       return evolve_rec(addListNode<int>(swt_state->pi->b, rb->tail), st, revst, evst);
-    case Match:
+    }
+    case Match: {
       revst->eb = addListNode<int>(rb->head, revst->eb);
       return evolve_rec(rb->tail, st, revst, evst);
-    case CheckPred:
+    }
+    case CheckPred: {
       if (swt_state->p->type == P_BOI) {
         if (evst->w == NULL)
           return evolve_rec(addListNode<int>(swt_state->i, rb->tail), st, revst, evst);
@@ -201,25 +205,30 @@ struct rec_evolve_struct *evolve_rec(struct llist<int> *rb, struct llist<int> *s
         revst->flgs = set_interrupted(revst->flgs);
         return evolve_rec(rb->tail, st, revst, evst);
       }
-    case CheckBackref:
+    }
+    case CheckBackref: {
       revst->flgs = set_interrupted(revst->flgs);
       return evolve_rec(rb->tail, st, revst, evst);
-    case BranchAlt:
+    }
+    case BranchAlt: {
       struct llist<int> *r = addListNode<int>(swt_state->pi->b, rb->tail);
       r = addListNode<int>(swt_state->pi->a, r);
       return evolve_rec(r, st, revst, evst);
-    case BranchKln:
+    }
+    case BranchKln: {
+      struct llist<int> *r;
       if (listMem<int>(rb->head, evst->kset))
         revst->hits = addListNode<struct twople<int, struct llist<int> *> *>(makeTwople<int, struct llist<int> *>(rb->head, addListNode<int>(rb->head, listCpy<int>(revst->eb))), revst->hits);
       if (swt_state->klnBool == 1) {
-        struct llist<int> *r = addListNode<int>(swt_state->pi->b, rb->tail);
+        r = addListNode<int>(swt_state->pi->b, rb->tail);
         r = addListNode<int>(swt_state->pi->a, rb->tail);
       }
       else {
-        struct llist<int> *r = addListNode<int>(swt_state->pi->a, rb->tail);
+        r = addListNode<int>(swt_state->pi->a, rb->tail);
         r = addListNode<int>(swt_state->pi->b, rb->tail);
       }
       return evolve_rec(r, st, revst, evst);
+    }
   }
 }
 

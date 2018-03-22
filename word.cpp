@@ -1,4 +1,5 @@
 #include "baselib.hpp"
+#include "word.hpp"
 
 typedef struct pair<char> crange; //Character range
 typedef struct llist<struct pair<char> *> word;

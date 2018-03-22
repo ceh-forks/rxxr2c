@@ -1,4 +1,4 @@
-#include<stdlib.h>
+#include<cctype>
 
 #define ZMIN '\x00'
 #define ZMAX '\x7f'

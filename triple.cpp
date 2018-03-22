@@ -1,3 +1,4 @@
+#include "baselib.hpp"
 #include "nfa.hpp"
 #include "set.hpp"
 #include "word.hpp"

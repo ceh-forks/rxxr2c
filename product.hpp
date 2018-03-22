@@ -1,4 +1,5 @@
-#include "baselib.hpp"
+#ifndef PRODUCT_H
+#define PRODUCT_H
 
 struct product {
   int i;
@@ -19,3 +20,5 @@ struct product_evolve_struct {
 };
 
 struct product_evolve_struct *product_evolve(struct nfa *nfa, word *w, struct product *p, struct llist<int> *brset);
+
+#endif

@@ -1,14 +1,10 @@
 #include "nfa.hpp"
+#include "beta.hpp"
 #include "baselib.hpp"
 #include "word.hpp"
 #include "set.hpp"
 #include "flags.hpp"
 #include "phi.hpp"
-
-struct phi_w_prefix { // Phis with prefixes
-  word *w;
-  llist<int> *p;
-};
 
 struct llist<struct llist<int> *> *phiset_add(struct llist<int> *l, struct llist<struct llist<int> *> *phiset) {
   if (phiset == NULL)
@@ -19,6 +15,16 @@ struct llist<struct llist<int> *> *phiset_add(struct llist<int> *l, struct llist
   }
   else
     return addListNode<struct llist<int> *>(l, phiset);
+}
+
+bool phiset_mem(struct llist<int> *l, struct llist<struct llist<int> *> *set) {
+  while(set) {
+    if (listSame<int>(l, set->head))
+      return true;
+    else
+      set = set->tail;
+  }
+  return false;
 }
 
 struct inode { // Tree of phis
@@ -78,16 +84,16 @@ struct inode *itr_add(struct inode *tr, char _u, char _v, struct llist<int> *_s)
   }
 }
 
-struct llist<struct phi_w_prefix *> *itr_collect(struct inode *tr, word *w, struct llist<struct phi_w_prefix *> *lst) {
+struct llist<phi_w_prefix *> *itr_collect(struct inode *tr, word *w, struct llist<phi_w_prefix *> *lst) {
   if (tr == NULL)
     return lst;
   crange *c = new crange;
   c->a = tr->c1;
   c->b = tr->c2;
-  struct phi_w_prefix *phi = new phi_w_prefix;
-  phi->w = word_extend(w, c);
-  phi->p = tr->t;
-  struct llist<struct phi_w_prefix *> *philist = addListNode<struct phi_w_prefix *>(phi, lst);
+  phi_w_prefix *phi = new phi_w_prefix;
+  phi->a = word_extend(w, c);
+  phi->b = tr->t;
+  struct llist<phi_w_prefix *> *philist = addListNode<phi_w_prefix *>(phi, lst);
   return itr_collect(tr->n2, w, itr_collect(tr->n2, w, philist));
 }
 
@@ -149,17 +155,17 @@ struct inode *adv_explore_intset_fold(struct llist<int> *i, inode *tr, struct nf
   }
 }
 
-struct llist<struct phi_w_prefix *> *advance(struct nfa *nfa, word *w, struct llist<int> *p) {
+struct llist<phi_w_prefix *> *phi_advance(struct nfa *nfa, word *w, struct llist<int> *p) {
   struct inode *tr = adv_explore_intset_fold(p, NULL, nfa);
-  struct llist<struct phi_w_prefix *> *r = itr_collect(tr, w, NULL);
+  struct llist<phi_w_prefix *> *r = itr_collect(tr, w, NULL);
   return r;
 }
 
-struct twople <struct llist<struct phi_w_prefix *> *, word *> *explore(struct nfa *nfa, word *w, struct llist<int> *p) {
+struct twople <struct llist<phi_w_prefix *> *, word *> *phi_explore(struct nfa *nfa, word *w, struct llist<int> *p) {
   struct inode *tr = adv_explore_intset_fold(p, NULL, nfa);
-  struct llist<struct phi_w_prefix *> *r1 = itr_collect(tr, w, NULL);
+  struct llist<phi_w_prefix *> *r1 = itr_collect(tr, w, NULL);
   word *r2 = itr_find_nomatch(tr);
-  return makeTwople<struct llist<struct phi_w_prefix *> *, word *>(r1, r2);
+  return makeTwople<struct llist<phi_w_prefix *> *, word *>(r1, r2);
 }
 
 struct phi_evolve_struct *evolve_rec(struct llist<int> *pl, struct llist<int> *st, struct llist<int> *ep, struct nfa *nfa, word *w, int iopt, int flgs) {
@@ -175,32 +181,37 @@ struct phi_evolve_struct *evolve_rec(struct llist<int> *pl, struct llist<int> *s
   st = intset_add(pl->head, st);
   struct state *swt_state = get_state(nfa, pl->head);
   switch(swt_state->type) {
-    case End:
+    case End: {
       flgs = set_accepting(flgs);
       struct llist<int> *pl2 = pl->tail;
       delete pl;
       return evolve_rec(pl2, st, intset_add(pl->head, ep), nfa, w, iopt, flgs);
-    case Kill:
+    }
+    case Kill: {
       struct llist<int> *pl2 = pl->tail;
       delete pl;
       return evolve_rec(pl2, st, ep, nfa, w, iopt, flgs);
+    }
     case Pass:
     case MakeB:
-    case EvalB:
+    case EvalB: {
       struct llist<int> *pl2 = pl->tail;
       delete pl;
       return evolve_rec(addListNode<int>(swt_state->i, pl2), st, ep, nfa, w, iopt, flgs);
+    }
     case BeginCap:
-    case EndCap:
+    case EndCap: {
       struct llist<int> *pl2 = pl->tail;
       delete pl;
       return evolve_rec(addListNode<int>(swt_state->pi->b, pl2), st, ep, nfa, w, iopt, flgs);
-    case Match:
+    }
+    case Match: {
       struct llist<int> *pl2 = pl->tail;
       ep = intset_add(pl->head, ep);
       delete pl;
       return evolve_rec(pl2, st, ep, nfa, w, iopt, flgs);
-    case CheckPred:
+    }
+    case CheckPred: {
       if (swt_state->p->type == P_BOI || swt_state->p->type == P_BOL) {
         if (w == NULL || (swt_state->p->type == P_BOL && w->head->a <= '\n' && '\n' <= w->head->b) || (swt_state->p->type == P_BOL && swt_state->p->value == 1 && w->head->a <= '\r' && '\r' <= w->head->b)) {
           struct llist<int> *pl2 = pl->tail;
@@ -226,18 +237,23 @@ struct phi_evolve_struct *evolve_rec(struct llist<int> *pl, struct llist<int> *s
         delete pl;
         return evolve_rec(pl2, st, ep, nfa, w, iopt, flgs);
       }
-    case CheckBackref:
+    }
+    case CheckBackref: {
       flgs = set_interrupted(flgs);
       struct llist<int> *pl2 = pl->tail;
       delete pl;
       return evolve_rec(pl2, st, ep, nfa, w, iopt, flgs);
-    case BranchAlt:
+    }
+    case BranchAlt: {
       struct llist<int> *pl2 = pl->tail;
       delete pl;
       pl2 = addListNode<int>(swt_state->pi->b, pl2);
       pl2 = addListNode<int>(swt_state->pi->a, pl2);
       return evolve_rec(pl2, st, ep, nfa, w, iopt, flgs);
-    case BranchKln:
+    }
+    case BranchKln: {
+      if (iopt == 0)
+        return NULL; //TODO: What do we do here?
       //Is this the kleene we're looking for?
       if (iopt == pl->head)
         flgs = set_klnhit(flgs);
@@ -245,6 +261,7 @@ struct phi_evolve_struct *evolve_rec(struct llist<int> *pl, struct llist<int> *s
       pl2 = addListNode<int>(swt_state->pi->a, pl2);
       delete pl;
       return evolve_rec(pl2, st, ep, nfa, w, iopt, flgs);
+    }
   }
 }
 
@@ -287,29 +304,33 @@ struct phi_simulate_struct *chr_simulate_rec(struct llist<int> *l, struct llist<
   struct state *swt_state = get_state(nfa, l->head);
   switch(swt_state->type) {
     case End:
-    case Kill:
+    case Kill: {
       struct llist<int> *l2 = l->tail;
       delete l;
       return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+    }
     case Pass:
     case MakeB:
-    case EvalB:
+    case EvalB: {
       struct llist<int> *l2 = addListNode<int>(swt_state->i, l->tail);
       delete l;
       return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+    }
     case BeginCap:
-    case EndCap:
+    case EndCap: {
       struct llist<int> *l2 = addListNode<int>(swt_state->pi->b, l->tail);
       delete l;
       return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+    }
     //This is where the matching / failing happens
-    case Match:
+    case Match: {
       if (matches(swt_state->cl, c))
         rp = intset_add(swt_state->i, rp);
       struct llist<int> *l2 = l->tail;
       delete l;
       return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
-    case CheckPred:
+    }
+    case CheckPred: {
       if (swt_state->p->type == P_BOI || swt_state->p->type == P_BOL) {
         struct llist<int> *l2 = l->tail;
         if (w == NULL || (swt_state->p->type == P_BOL && ((w->head->a <= '\n' && '\n' <= w->head->b) || (swt_state->p->value == 1 && w->head->a <= '\r' && '\r' <= w->head->b))))
@@ -328,17 +349,20 @@ struct phi_simulate_struct *chr_simulate_rec(struct llist<int> *l, struct llist<
         delete l;
         return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
       }
-    case CheckBackref:
+    }
+    case CheckBackref: {
       flgs = set_interrupted(flgs);
       struct llist<int> *l2 = l->tail;
       delete l;
       return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+    }
     case BranchAlt:
-    case BranchKln:
+    case BranchKln: {
       struct llist<int> *l2 = addListNode<int>(swt_state->pi->b, l->tail);
       l2 = addListNode<int>(swt_state->pi->b, l2);
       delete l;
       return chr_simulate_rec(l2, st, rp, nfa, w, c, flgs);
+    }
   }
 }
 

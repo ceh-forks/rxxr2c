@@ -1,5 +1,8 @@
 #include "baselib.hpp"
 
+#ifndef RPARSER_H
+#define RPARSER_H
+
 enum regextokentype {Literal,
   Anchor,
   GrpOpen,
@@ -41,3 +44,5 @@ struct regextoken {
     struct repetition *repetition;
   };
 };
+
+#endif
