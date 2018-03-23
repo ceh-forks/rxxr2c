@@ -1,14 +1,10 @@
 #include "baselib.hpp"
 #include "nfa.hpp"
 #include "set.hpp"
-#include "word.hpp"
-#include "product.hpp"
-#include <boost/functional/hash.hpp>
-#include <boost/unordered_map.hpp>
+#include "util.hpp"
 #include <string>
 
 typedef boost::unordered_map<std::string, struct pair<char> *> hashtbl_cpair;
-typedef boost::unordered_map<int, struct llist<int> *> *hashtbl_kleene;
 
 struct pair<struct llist<int> *> *find_kleene_rec(struct nfa *nfa, int i, struct pair<struct llist<int> *> *lst) {
   if (listMem<int>(i, lst->a))
@@ -220,7 +216,20 @@ struct xtree *xtr_add(struct xtree *tr, char u, char v, struct llist<int> *l1, s
 }
 
 std::string utilHashFunc(int i, int j) {
-  std::string r = std::to_string(min(i, j)) + std::to_string(max(i, j));
+  std::string r = std::to_string(min(i, j)) + "x" + std::to_string(max(i, j)) + "e";
+}
+
+struct pair<int> *utilHashFuncReverse(std::string s) {
+  int i = 0;
+  while (s.at(i) != 'x')
+    i++;
+  std::string s1 = s.substr(0, i);
+  i++;
+  int j = 0;
+  while (s.at(i + j) != 'e')
+    j++;
+  std::string s2 = s.substr(i, j-i);
+  return makePair<int>(stoi(s1), stoi(s2));
 }
 
 void xtr_collect_rec(xtree *tr, hashtbl_cpair *table) {
@@ -275,13 +284,13 @@ hashtbl_cpair *get_parallel_transitions(struct nfa *nfa, int ik, int i1, int i2)
 }
 
 struct fc_struct {
-  struct llist<struct product *> *pcache;
-  struct llist<struct product *> *nlist;
-  struct llist<struct product *> *clist;
+  struct llist<struct pair<int> *> *pcache;
+  struct llist<struct pair<int> *> *nlist;
+  struct llist<struct pair<int> *> *clist;
 };
 
 //collect converging products and eliminate redundancies
-struct fc_struct *filter_convergences(struct llist<struct product *> *plist, struct llist<struct product *> *pcache, struct llist<struct product *> *nlist, struct llist<struct product *> *clist, struct nfa *nfa) {
+struct fc_struct *filter_convergences(struct llist<struct pair<int> *> *plist, struct llist<struct pair<int> *> *pcache, struct llist<struct pair<int> *> *nlist, struct llist<struct pair<int> *> *clist, struct nfa *nfa) {
   if (plist == NULL) {
     struct fc_struct *r = new fc_struct;
     r->pcache = pcache;
@@ -289,10 +298,90 @@ struct fc_struct *filter_convergences(struct llist<struct product *> *plist, str
     r->clist = clist;
     return r;
   }
-  else if (plist->head->i == plist->head->)
+  else if (plist->head->a == plist->head->b) {
+    struct llist<struct pair<int> *> *t = plist;
+    plist = plist->tail;
+    t->tail = clist;
+    clist = t;
+    return filter_convergences(plist, pcache, nlist, clist, nfa);
+  }
+  else {
+    if (intpairset_mem(plist->head, pcache)) {
+      //product already encountered, ignore
+      //TODO: memory
+      return filter_convergences(plist->tail, pcache, nlist, clist, nfa);
+    }
+    else {
+      //new product, needs to be simulated further
+      struct llist<struct pair<int> *> *t = plist;
+      plist = plist->tail;
+      pcache = intpairset_add(t->head, pcache);
+      nlist = addListNode<struct pair<int> *>(t->head, nlist);
+      delete t;
+      return filter_convergences(plist, pcache, nlist, clist, nfa);
+    }
+  }
+}
+
+bool check_convergence(int ik, struct llist<struct pair<int> *> *plist, struct llist<struct pair<int> *> *pcache, struct nfa *nfa) {
+  if (plist == NULL)
+    return false;
+  //calculate the new list of products reachable from the current product
+  struct llist<struct pair<int> *> *nprods = NULL;
+  hashtbl_cpair *table = get_parallel_transitions(nfa, ik, plist->head->a, plist->head->b);
+  hashtbl_cpair::iterator iter = table->begin;
+  while(iter != table->end) {
+    nprods = addListNode<struct pair<int> *>(utilHashFuncReverse(iter->first), nprods);
+    delete iter->second;
+  }
+  table->clear;
+  delete table;
+  //check to see if there are any converging products
+  struct fc_struct *fc = filter_convergences(nprods, pcache, plist->tail, NULL, nfa);
+    if (fc->clist == NULL) {
+      bool r = check_convergence(ik, fc->nlist, pcache, nfa);
+      delete fc;
+      return r;
+    }
+    else {
+      delete fc;
+      return true;
+    }
+}
+
+//filter out innner branches with parallel paths leading to a common state
+struct llist<int> *filter_converging_branches(int ik, struct llist<struct branch_struct *> *l, struct nfa *nfa) {
+  if (l == NULL)
+    return NULL;
+  struct llist<int> *tf = filter_converging_branches(ik, l->tail, nfa);
+  struct llist<struct pair<int> *> *p = addListNode<struct pair<int> *>(makePair<int>(l->head->p->a, l->head->p->b), NULL);
+  if (check_convergence(ik, p, NULL, nfa))
+    return addListNode<int>(l->head->i, tf);
+  else
+    return tf;
+}
+
+//analyse each kleene for pumpability
+void fpk_explore(struct llist<int> *klns, struct nfa *nfa, hashtbl_kleene *table) {
+  if (klns == NULL)
+    return;
+  //collect pumpable kleene states along with the corresponding branch points
+  struct llist<int> *brset, *t, *iter;
+  brset = NULL;
+  t = filter_converging_branches(klns->head, find_branches(nfa, klns->head), nfa);
+  iter = t;
+  while(iter) {
+    intset_add(iter->head, brset);
+    iter = iter->tail;
+  }
+  deleteList<int>(t);
+  if (brset != NULL)
+    table->insert( { klns->head, brset } );
+  fpk_explore(klns->tail, nfa, table);
 }
 
 hashtbl_kleene *find_pumpable_kleene(struct nfa *nfa) {
   hashtbl_kleene *result = new hashtbl_kleene;
-
+  fpk_explore(find_kleene(nfa), nfa, result);
+  return result;
 }

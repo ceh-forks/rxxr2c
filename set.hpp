@@ -13,4 +13,7 @@ llist<int> *intset_union(llist<int> *l1, llist<int> *l2);
 
 int compare_intlist(struct llist<int> *, struct llist<int> *);
 
+struct llist<struct pair<int> *> *intpairset_add(struct pair<int> *, struct llist<struct pair<int> *> *);
+bool intpairset_mem(struct pair<int> *, struct llist<struct pair<int> *> *);
+
 #endif

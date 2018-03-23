@@ -38,6 +38,27 @@ int compare_intpair(struct pair<int> *x, struct pair<int> *y) {
   }
 }
 
+struct llist<struct pair<int> *> *intpairset_add(struct pair<int> *p, struct llist<struct pair<int> *> *l) {
+  if (l == NULL)
+    return addListNode<struct pair<int> *>(p, l);
+  else if (compare_intpair(p, l->head) == 1) {
+    l->tail = intpairset_add(p, l->tail);
+    return l;
+  }
+  else
+    return addListNode<struct pair<int> *>(p, l);
+}
+
+bool intpairset_mem(struct pair<int> *p, struct llist<struct pair<int> *> *l) {
+  while (l) {
+    if (p->a == l->head->a && p->b == l->head->b)
+      return true;
+    else
+      l = l->tail;
+  }
+  return false;
+}
+
 int compare_intlist(struct llist<int> *x, struct llist<int> *y) {
   if (x == NULL && y == NULL)
     return 0;
@@ -50,3 +71,5 @@ int compare_intlist(struct llist<int> *x, struct llist<int> *y) {
   else
     return compare_intlist(x->tail, y->tail);
 }
+
+

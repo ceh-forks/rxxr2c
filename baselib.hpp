@@ -1,7 +1,7 @@
 #ifndef BASE_H
 #define BASE_H
 
-#include <cstdlib>
+#define NULL nullptr
 
 /* Standard general functions, structures and constants */
 //First/last character of alphabet in ASCII
