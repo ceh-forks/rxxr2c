@@ -23,6 +23,10 @@ struct llist<int> *intset_union(struct llist<int> *l1, struct llist<int> *l2) {
   return t1;
 }
 
+bool intset_subset(struct llist<int> *l1, struct llist<int> *l2) {
+  //TODO
+}
+
 int compare_intpair(struct pair<int> *x, struct pair<int> *y) {
   if(x->a < y->a)
     return -1;

@@ -110,8 +110,9 @@ struct pattern {
 };
 
 struct regex *make_r(struct exp *, int, int); //create regex with default metadata
-struct ctr *make_ctr(int, int); //initialise default ctr
-struct ctr *ctr_add(struct ctr, char, char); //insert new range into character class
+struct ctr *make_ctr(int, int, struct ctr *, struct ctr *); //initialise default ctr
+void delete_ctr(struct ctr *); //free memory
+struct ctr *ctr_add(struct ctr *, int, int); //insert new range into character class
 struct llist<struct pair<char> *> *ctr_positive(struct ctr); //read out character class
 struct llist<struct pair<char> *> *ctr_negative(struct ctr); //read out inverse of character class
 

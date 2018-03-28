@@ -1,15 +1,6 @@
-#include "baselib.hpp"
+#include "zanalyser.hpp"
 #include "phi.hpp"
 #include "flags.hpp"
-
-struct zanalyser_struct {
-  struct nfa *nfa;
-  word *w;
-  struct llist<struct llist<int> *> *cache;
-  struct llist<phi_w_prefix *> *evolve;
-  struct llist<phi_w_prefix *> *advance;
-  int flgs;
-};
 
 struct zanalyser_struct *zanalyser_init(struct nfa *nfa, word *w, struct llist<int> *p) {
   struct zanalyser_struct *r = new zanalyser_struct;

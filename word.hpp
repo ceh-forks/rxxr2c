@@ -11,7 +11,7 @@ word *word_suffix(word *, int);
 
 crange *word_intersect(crange *c1, crange *c2);
 
-struct llist<char> *word_select(struct llist<struct pair<char> *> *);
+struct llist<char> *word_select(word *, word *);
 
 //#TODO
 char *word_print(void);

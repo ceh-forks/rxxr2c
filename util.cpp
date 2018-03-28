@@ -1,10 +1,8 @@
+#include <string>
 #include "baselib.hpp"
 #include "nfa.hpp"
 #include "set.hpp"
 #include "util.hpp"
-#include <string>
-
-typedef boost::unordered_map<std::string, struct pair<char> *> hashtbl_cpair;
 
 struct pair<struct llist<int> *> *find_kleene_rec(struct nfa *nfa, int i, struct pair<struct llist<int> *> *lst) {
   if (listMem<int>(i, lst->a))
@@ -329,12 +327,12 @@ bool check_convergence(int ik, struct llist<struct pair<int> *> *plist, struct l
   //calculate the new list of products reachable from the current product
   struct llist<struct pair<int> *> *nprods = NULL;
   hashtbl_cpair *table = get_parallel_transitions(nfa, ik, plist->head->a, plist->head->b);
-  hashtbl_cpair::iterator iter = table->begin;
-  while(iter != table->end) {
+  hashtbl_cpair::iterator iter = table->begin();
+  while(iter != table->end()) {
     nprods = addListNode<struct pair<int> *>(utilHashFuncReverse(iter->first), nprods);
     delete iter->second;
   }
-  table->clear;
+  table->clear();
   delete table;
   //check to see if there are any converging products
   struct fc_struct *fc = filter_convergences(nprods, pcache, plist->tail, NULL, nfa);

@@ -1,21 +1,8 @@
-#include "baselib.hpp"
+#include "y1analyser.hpp"
 #include "phi.hpp"
 #include "product.hpp"
 #include "triple.hpp"
 #include "flags.hpp"
-
-struct y1analyser_struct {
-  struct nfa *nfa;
-  int ik;
-  struct llist<int> *brset;
-  word *w;
-  struct llist<struct product *> *pcache;
-  struct llist<struct triple *> *tcache;
-  struct llist<struct twople<word *, struct triple *> *> *tpls;
-  struct llist<struct twople<word *, struct product *> *> *evolve;
-  struct llist<struct twople<word *, struct product *> *> *advance;
-  int flgs;
-};
 
 struct y1analyser_struct *y1analyser_init(struct nfa *nfa, word *w, struct llist<int> *p, int ik, struct llist<int> *brset) {
   struct y1analyser_struct *r = new y1analyser_struct;

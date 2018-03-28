@@ -1,7 +1,5 @@
 #include "nfa.hpp"
 #include "beta.hpp"
-#include "baselib.hpp"
-#include "word.hpp"
 #include "set.hpp"
 #include "flags.hpp"
 #include "phi.hpp"
@@ -279,12 +277,6 @@ short matches (struct llist<crange *> *cls, char c) {
   else
     return matches(cls->tail, c);
 }
-
-struct phi_simulate_struct {
-  int flgs;
-  word *w;
-  struct llist<int> *lst;
-};
 
 struct phi_simulate_struct *chr_simulate_rec(struct llist<int> *l, struct llist<int> *st, struct llist<int> *rp, struct nfa *nfa, word *w, char c, int flgs) {
   if (l == NULL) {

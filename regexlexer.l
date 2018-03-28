@@ -150,13 +150,14 @@ range_cbody range_cbody_u '-' range_cbody_v
 posix_names "Lower" | "Upper" | "ASCII" | "Alpha" | "Digit" | "Alnum" | "Punct" | "Graph" | "Print" | "Blank" | "Cntrl" | "XDigit" | "Space"
 predefined_cls escape_char (['d' 'D' 's' 'S' 'w' 'W'] | 'p' '{' posix_names '}')
 
-%s tk_normal
+%x tk_normal
 
 %%
 
-<tk_normal>'\n' return makeEos();
-  | '|' return makeVbar();
-  | '*''+' raise(1);
+<tk_normal>\n return makeEos();
+<tk_normal>"|" return makeVbar();
+<tk_normal>"*+"" raise(1);
+<tk_normal>
 
 %%
 

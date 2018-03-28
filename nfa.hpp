@@ -38,7 +38,7 @@ struct nfa {
 };
 
 struct state *get_state(struct nfa *, int);
-struct nfa *make(struct pattern *);
+struct nfa *make(struct regex *, int);
 //int root(struct t);
 //int size(struct t);
 //struct llist<transition> get_state(struct t, int);

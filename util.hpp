@@ -5,8 +5,9 @@
 #include <boost/unordered_map.hpp>
 
 typedef boost::unordered_map<int, struct llist<int> *> hashtbl_kleene;
+typedef boost::unordered_map<std::string, struct pair<char> *> hashtbl_cpair;
 
 bool is_epsilon_reachable(struct nfa *nfa, word *w, int src, int dst);
-hashtbl_kleene *find_pumpable_kleene(struct nfa *nfa)
+hashtbl_kleene *find_pumpable_kleene(struct nfa *nfa);
 
 #endif

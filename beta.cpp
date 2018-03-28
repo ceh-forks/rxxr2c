@@ -43,7 +43,7 @@ void btins(struct btree<int> *t, int i) {
   }
 }
 
-struct llist<int> *elems(struct llist<int> *l) {
+struct llist<int> *beta_elems(struct llist<int> *l) {
   struct llist<int> *t = NULL;
   while(l) {
     intset_add(l->head, t);

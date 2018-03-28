@@ -1,4 +1,5 @@
 #include "baselib.hpp"
+#include "nfa.hpp"
 #include "phi.hpp"
 #include "set.hpp"
 #include "flags.hpp"

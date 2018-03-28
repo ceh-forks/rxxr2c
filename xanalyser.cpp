@@ -1,20 +1,8 @@
-#include "baselib.hpp"
 #include "beta.hpp"
 #include "phi.hpp"
-#include "word.hpp"
 #include "flags.hpp"
-
-struct xanalyserstruct {
-  struct nfa *nfa;
-  struct llist<int> *kset;
-  word *w;
-  struct llist<struct llist<int> *> *bcache;
-  struct llist<struct llist<int> *> *pcache;
-  struct llist<struct twople<int, struct llist<int> *> *> *hits;
-  struct llist<struct twople<word *, struct llist<int> *> *> *evolve;
-  struct llist<struct twople<word *, struct llist<int> *> *> *advance;
-  int flgs;
-};
+#include "nfa.hpp"
+#include "xanalyser.hpp"
 
 struct xanalyserstruct *xanalyser_init(struct nfa *nfa, struct llist<int> *kset) {
   struct xanalyserstruct *r = new xanalyserstruct;
@@ -27,12 +15,6 @@ struct xanalyserstruct *xanalyser_init(struct nfa *nfa, struct llist<int> *kset)
   r->hits = NULL;
   r->evolve = addListNode<struct twople<word *, struct llist<int> *> *>(makeTwople<word *, struct llist<int> *>(NULL, beta_make(nfa->root)), NULL);
 }
-
-struct xanalyser_next_struct {
-  int i;
-  word *w;
-  struct llist<int> *phi;
-};
 
 struct xanalyser_next_struct *nextmake(int i, word *w, struct llist<int> *phi) {
   struct xanalyser_next_struct *r = new xanalyser_next_struct;

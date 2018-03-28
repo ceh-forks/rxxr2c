@@ -1,7 +1,9 @@
 #ifndef BASE_H
 #define BASE_H
 
+#ifndef NULL
 #define NULL nullptr
+#endif
 
 /* Standard general functions, structures and constants */
 //First/last character of alphabet in ASCII
