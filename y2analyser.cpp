@@ -14,7 +14,7 @@ struct y2analyser_struct {
   int flgs;
 };
 
-struct y2analyser_struct y2analyser_init(struct nfa *nfa, word *w, struct triple *tpl, int ik) {
+struct y2analyser_struct *y2analyser_init(struct nfa *nfa, word *w, struct triple *tpl, int ik) {
   struct y2analyser_struct *r = new y2analyser_struct;
   r->nfa = nfa;
   r->ik = ik;

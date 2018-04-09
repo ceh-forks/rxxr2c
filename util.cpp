@@ -331,6 +331,7 @@ bool check_convergence(int ik, struct llist<struct pair<int> *> *plist, struct l
   while(iter != table->end()) {
     nprods = addListNode<struct pair<int> *>(utilHashFuncReverse(iter->first), nprods);
     delete iter->second;
+    iter++;
   }
   table->clear();
   delete table;

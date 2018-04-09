@@ -369,10 +369,11 @@ struct nfa *make(regex *r, int flags) {
   decorate_regex(r, flags);
   int state_count = r->metadata->scount + 1;
   struct nfa *nfa = new struct nfa;
+  
   //Initialise states
   nfa->states = listInitialise<struct state *>(NULL, state_count);
   struct llist<struct state *> *ts = nfa->states;
-  for(int i=0; i < state_count; i++) {
+  while(ts) {
     ts->head = new struct state;
     ts->head->type = End;
     ts = ts->tail;
@@ -382,14 +383,28 @@ struct nfa *make(regex *r, int flags) {
   //Initialise positions
   nfa->positions = listInitialise<struct pair<int> *>(NULL, state_count);
   struct llist<struct pair<int> *> *tp = nfa->positions;
-  for(int i; i < state_count; i++) {
+  while(tp) {
     tp->head = new struct pair<int>;
     tp->head->a = r->metadata->epos;
     tp->head->b = r->metadata->epos;
+    tp = tp->tail;
   }
   struct pair<int> *p = compile(r, nfa->states, nfa->positions, (state_count-2), (state_count-1), flags);
   nfa->root = p->b;
   return nfa;
+}
+
+void delete_nfa(struct nfa *nfa) {
+  deleteListWithPointers<struct state *>(nfa->states);
+  deleteListWithPointers<struct pair<int> *>(nfa->positions);
+  struct llist<struct llist<struct transition *> *> *iter = nfa->transitions;
+  while(iter) {
+    struct llist<struct llist<struct transition *> *> *t = iter;
+    iter = iter->tail;
+    deleteListWithPointers<struct transition *>(t->head);
+    delete t;
+  }
+  delete nfa;
 }
 
 struct state *get_state(struct nfa *nfa, int i) {

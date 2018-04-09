@@ -59,9 +59,11 @@ struct ctr *ctr_add(struct ctr *node, int u, int v) {
 }
 
 void delete_ctr(struct ctr *node) {
-  delete_ctr(node->lt);
-  delete_ctr(node->rt);
-  delete node;
+  if (node != NULL) {
+    delete_ctr(node->lt);
+    delete_ctr(node->rt);
+    delete node;
+  }
 }
 
 struct llist<struct pair<char> *> *ctr_positive_r(struct ctr *node, struct llist<struct pair<char> *> *lst) {
